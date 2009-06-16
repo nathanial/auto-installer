@@ -9,14 +9,21 @@ def do_nothing
 end
 
 def package(name, kwargs)
-  p = nil
-  dependencies = kwargs[:depends] or []
+  defaults = {:depends => [], :install => do_nothing
+              :remove => do_nothing, :installed? => do_nothing}
+  kwargs = defaults.merge(kwargs)
+  dependencies = kwargs[:depends]
   p = Package.new(name, dependencies)
-  p.install_callback = kwargs[:install] or do_nothing
-  p.remove_callback = kwargs[:remove] or do_nothing
-  p.installed_callback = kwargs[:installed?] or do_nothing
+  p.install_callback = kwargs[:install]
+  p.remove_callback = kwargs[:remove]
+  p.installed_callback = kwargs[:installed?]
+	puts "installed callback = #{p.installed_callback.class}"
   p.register
   return p
+end
+
+def meta_package(name, kwargs)
+	package(name, kwargs)
 end
 
 def aptitude_package(name, aptitude_name)
@@ -64,14 +71,14 @@ class Package
         Package.install(dependency)
       end
       @install_callback.call
-      @install_hooks.each {|hook| hook.call}
+      run_install_hooks
     end
   end
 
   def remove
     if installed?
       @remove_callback.call
-      @remove_hooks.each {|hook| hook.call}
+      run_remove_hooks
     end
   end
 
@@ -85,6 +92,14 @@ class Package
 
   def add_remove_hook(callback)
     @remove_hooks << callback
+  end
+
+  def run_install_hooks
+    @install_hooks.each {|hook| hook.call}
+  end
+
+  def run_remove_hooks
+    @remove_hooks.each {|hook| hook.call}
   end
 
   def dependency_graph(is_root = true)
@@ -119,6 +134,14 @@ class Package
   def self.remove(name)
     lookup(name).remove
   end
+
+  def self.run_install_hooks(name)
+    lookup(name).run_install_hooks
+  end
+
+  def self.run_remove_hooks(name)
+    lookup(name).run_remove_hooks
+  end
 end  
 
 class AptitudePackage < Package
@@ -138,4 +161,5 @@ class AptitudePackage < Package
     }
   end
 end
+		
     

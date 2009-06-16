@@ -9,12 +9,15 @@ def do_nothing
 end
 
 def package(name, kwargs)
-  p = nil
-  dependencies = kwargs[:depends] or []
+  defaults = {:depends => [], :install => do_nothing,
+              :remove => do_nothing, :installed? => do_nothing}
+  kwargs = defaults.merge(kwargs)
+  dependencies = kwargs[:depends]
   p = Package.new(name, dependencies)
-  p.install_callback = kwargs[:install] or do_nothing
-  p.remove_callback = kwargs[:remove] or do_nothing
-  p.installed_callback = kwargs[:installed?] or do_nothing
+  p.install_callback = kwargs[:install]
+  p.remove_callback = kwargs[:remove]
+  p.installed_callback = kwargs[:installed?]
+	puts "installed callback = #{p.installed_callback.class}"
   p.register
   return p
 end
