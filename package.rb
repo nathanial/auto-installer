@@ -11,7 +11,7 @@ end
 def package(name, kwargs)
   defaults = {:depends => [], :install => do_nothing,
               :remove => do_nothing, :installed? => do_nothing}
-  kwargs = defaults.merge(kwargs)
+  kwargs = defaults.update(kwargs)
   dependencies = kwargs[:depends]
   p = Package.new(name, dependencies)
   p.install_callback = kwargs[:install]

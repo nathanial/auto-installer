@@ -147,7 +147,8 @@ package :tdsurface, {
     system("mkdir /var/log/tdsurface")
     system("chown root:www-data /var/log/tdsurface")
     system("chmod a+rwx /var/log/tdsurface")
-    system("ln -s #{python_site_packages}/django/contrib/admin/media /var/www/media")
+    system("cp -rf #{python_site_packages}/django/contrib/admin/media /var/www/media")
+    system("cp -rf /var/django-projects/tdsurface/media /var/www/")
     system("usermod -a -G dialout www-data")
     system("""mysql --user=root --password=zoroaster22 -e \"
 CREATE DATABASE tdsurface;
@@ -156,12 +157,13 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
     system("python /var/django-projects/tdsurface/manage.py syncdb")
     system("cp support/tdsurface_apache.conf /etc/apache2/conf.d/tdsurface")
+    system("service apache2 restart")
   },
   :remove => procedure {
     system("rm -rf /var/django-projects")
     system("rm -rf /var/matplotlib")
     system("rm -rf /var/log/tdsurface")
-    system("rm /var/www/media")
+    system("rm -rf /var/www/media")
     system("""mysql --user=root --password=zoroaster22 -e \"
 DROP DATABASE tdsurface;
 DROP USER 'tdsurface'@'localhost';\"
@@ -169,6 +171,6 @@ DROP USER 'tdsurface'@'localhost';\"
     system("rm /etc/apache2/conf.d/tdsurface")
   },
   :installed? => procedure {
-    false
+    File.exists? '/var/django-projects'
   }    
 }
