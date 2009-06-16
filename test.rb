@@ -15,17 +15,17 @@ aptitude_packages({:git => 'git-core',
                    :python_mysqldb => 'python-mysqldb'})
 
 meta_package :python, {
-	:install => procedure {
-		Package.install(:python25)
-	},
-	:remove => procedure {
-		Package.remove(:python25) if Package.installed?(:python25)
-		Package.remove(:python26) if Package.installed?(:python26)
-	},
+  :install => procedure {
+    Package.install(:python25)
+  },
+  :remove => procedure {
+    Package.remove(:python25) if Package.installed?(:python25)
+    Package.remove(:python26) if Package.installed?(:python26)
+  },
   :installed? => procedure {
     Package.installed?(:python25) or 
     Package.installed?(:python26)
-	}	
+  }	
 }
 
 add_install_hook(:git, procedure {
@@ -40,7 +40,7 @@ add_install_hook(:git, procedure {
 })
 
 site_lisp_dir = '/usr/local/share/emacs/site-lisp'
-package :my_site_lisp, {
+package :my_emacs, {
   :depends => [:emacs, :git],
   :install => procedure {
     system("git clone git://github.com/nathanial/my-site-lisp")
@@ -53,6 +53,24 @@ package :my_site_lisp, {
   :installed? => procedure {
     File.exists? "#{site_lisp_dir}/mode-loader.el"
   }
+}
+
+package :my_keybindings, {
+  :depends => [],
+  :install => procedure {
+    system("cp support/xmodmap ~/.xmodmap")
+    system("xmodmap ~/.xmodmap")
+  },
+  :remove => procedure {
+    system("rm ~/.xmodmap")
+  },
+  :installed? => procedure {
+    File.exists? "~/.xmodmap"
+  }
+}
+
+package :my_environment, {
+  :depends => [:my_emacs, :my_keybindings]
 }
 
 package :hudson, {
