@@ -68,14 +68,14 @@ class Package
         Package.install(dependency)
       end
       @install_callback.call
-      @install_hooks.each {|hook| hook.call}
+      run_install_hooks
     end
   end
 
   def remove
     if installed?
       @remove_callback.call
-      @remove_hooks.each {|hook| hook.call}
+      run_remove_hooks
     end
   end
 
@@ -89,6 +89,14 @@ class Package
 
   def add_remove_hook(callback)
     @remove_hooks << callback
+  end
+
+  def run_install_hooks
+    @install_hooks.each {|hook| hook.call}
+  end
+
+  def run_remove_hooks
+    @remove_hooks.each {|hook| hook.call}
   end
 
   def dependency_graph(is_root = true)
@@ -122,6 +130,14 @@ class Package
 
   def self.remove(name)
     lookup(name).remove
+  end
+
+  def self.run_install_hooks(name)
+    lookup(name).run_install_hooks
+  end
+
+  def self.run_remove_hooks(name)
+    lookup(name).run_remove_hooks
   end
 end  
 
