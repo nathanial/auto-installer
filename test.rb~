@@ -1,31 +1,31 @@
 require 'package'
 
-aptitude_packages({:git => 'git-core',
-                   :svn => 'subversion',
-                   :ruby => 'ruby1.8',
-                   :java => 'sun-java6-jdk',
-                   :mysql_server => 'mysql-server',
-                   :python25 => 'python2.5',
-									 :python26 => 'python2.6',
-                   :matplotlib => 'python-matplotlib',
-                   :python_tz => 'python-tz',
-                   :emacs => 'emacs-snapshot-gtk',
-                   :apache2 => 'apache2',
-                   :mod_python => 'libapache2-mod-python',
-                   :python_mysqldb => 'python-mysqldb'})
+aptitude_packages({ :git => 'git-core',
+                    :svn => 'subversion',
+                    :ruby => 'ruby1.8',
+                    :java => 'sun-java6-jdk',
+                    :mysql_server => 'mysql-server',
+                    :python25 => 'python2.5',
+                    :python26 => 'python2.6',
+                    :matplotlib => 'python-matplotlib',
+                    :python_tz => 'python-tz',
+                    :emacs => 'emacs-snapshot-gtk',
+                    :apache2 => 'apache2',
+                    :mod_python => 'libapache2-mod-python',
+                    :python_mysqldb => 'python-mysqldb'})
 
 meta_package :python, {
-	:install => {
-		Package.install(:python25)
-	},
-	:remove => procedure {
-		Package.remove(:python25) if Package.installed?(:python25)
-		Package.remove(:python26) if Package.installed?(:python26)
-	},
+  :install => procedure {
+    Package.install(:python25)
+  },
+  :remove => procedure {
+    Package.remove(:python25) if Package.installed?(:python25)
+    Package.remove(:python26) if Package.installed?(:python26)
+  },
   :installed? => procedure {
     Package.installed?(:python25) or 
     Package.installed?(:python26)
-	}	
+  }	
 }
 
 add_install_hook(:git, procedure {
@@ -40,7 +40,7 @@ add_install_hook(:git, procedure {
 })
 
 site_lisp_dir = '/usr/local/share/emacs/site-lisp'
-package :my_site_lisp, {
+package :my_emacs, {
   :depends => [:emacs, :git],
   :install => procedure {
     system("git clone git://github.com/nathanial/my-site-lisp")
@@ -53,6 +53,24 @@ package :my_site_lisp, {
   :installed? => procedure {
     File.exists? "#{site_lisp_dir}/mode-loader.el"
   }
+}
+
+package :my_keybindings, {
+  :depends => [],
+  :install => procedure {
+    system("cp support/xmodmap ~/.xmodmap")
+    system("xmodmap ~/.xmodmap")
+  },
+  :remove => procedure {
+    system("rm ~/.xmodmap")
+  },
+  :installed? => procedure {
+    File.exists? "~/.xmodmap"
+  }
+}
+
+package :my_environment, {
+  :depends => [:my_emacs, :my_keybindings]
 }
 
 package :hudson, {
@@ -129,28 +147,30 @@ package :tdsurface, {
     system("mkdir /var/log/tdsurface")
     system("chown root:www-data /var/log/tdsurface")
     system("chmod a+rwx /var/log/tdsurface")
-    system("ln -s #{python_site_packages}/django/contrib/admin/media /var/www/media")
+    system("cp -rf #{python_site_packages}/django/contrib/admin/media /var/www/media")
+    system("cp -rf /var/django-projects/tdsurface/media /var/www/")
     system("usermod -a -G dialout www-data")
-    system("""mysql --user=root --password=zoroaster22 -e \"
+    system("""mysql --user=root --password=mosfet -e \"
 CREATE DATABASE tdsurface;
 CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY 'mosfet';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
     system("python /var/django-projects/tdsurface/manage.py syncdb")
     system("cp support/tdsurface_apache.conf /etc/apache2/conf.d/tdsurface")
+    system("service apache2 restart")
   },
   :remove => procedure {
     system("rm -rf /var/django-projects")
     system("rm -rf /var/matplotlib")
     system("rm -rf /var/log/tdsurface")
-    system("rm /var/www/media")
-    system("""mysql --user=root --password=zoroaster22 -e \"
+    system("rm -rf /var/www/media")
+    system("""mysql --user=root --password=mosfet -e \"
 DROP DATABASE tdsurface;
 DROP USER 'tdsurface'@'localhost';\"
 """)
     system("rm /etc/apache2/conf.d/tdsurface")
   },
   :installed? => procedure {
-    false
+    File.exists? '/var/django-projects'
   }    
 }

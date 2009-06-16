@@ -150,7 +150,7 @@ package :tdsurface, {
     system("cp -rf #{python_site_packages}/django/contrib/admin/media /var/www/media")
     system("cp -rf /var/django-projects/tdsurface/media /var/www/")
     system("usermod -a -G dialout www-data")
-    system("""mysql --user=root --password=zoroaster22 -e \"
+    system("""mysql --user=root --password=mosfet -e \"
 CREATE DATABASE tdsurface;
 CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY 'mosfet';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
@@ -164,7 +164,7 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
     system("rm -rf /var/matplotlib")
     system("rm -rf /var/log/tdsurface")
     system("rm -rf /var/www/media")
-    system("""mysql --user=root --password=zoroaster22 -e \"
+    system("""mysql --user=root --password=mosfet -e \"
 DROP DATABASE tdsurface;
 DROP USER 'tdsurface'@'localhost';\"
 """)
