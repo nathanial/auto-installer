@@ -1,0 +1,3 @@
+SetEnv MPLCONFIGDIR /var/matplotlib
+<Location "/tdsurface/">
+	  			       		    

@@ -1,0 +1,3 @@
+
+DATABASE_PASSWORD='mosfet'
+DATABASE_HOST='localhost'
