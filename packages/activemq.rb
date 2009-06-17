@@ -10,6 +10,7 @@ package :activemq, {
     system("ln -sv /opt/apache-activemq-5.2.0 /opt/active-mq")
     system("ln -sv /opt/apache-activemq-5.2.0/bin/linux-x86-32 /opt/apache-activemq-5.2.0/bin/linux")
     system("cp -v support/activemq /etc/init.d/")
+    system("chmod a+x /etc/init.d/activemq")
     system("update-rc.d activemq defaults")
   },
   :remove => procedure {
