@@ -10,7 +10,16 @@ if [ -z $(which ruby) ]
 then
     aptitude -y install ruby
 fi
-    
+
+if [ -z /root/.ssh/id_rsa ]
+then
+    ruby -e "
+require 'package'
+require 'packages/general'
+Package.run_install_hooks(:git)
+"
+fi
+
 case "$1" in 
     "install")
 	ruby -e "
@@ -19,6 +28,7 @@ require 'packages/$2'
 Package.install(:$2)
 "
 	;;
+
     "remove")
 	ruby -e "
 require 'package'
@@ -26,8 +36,10 @@ require 'packages/$2'
 Package.remove(:$2)
 "
 	;;
+
     "installed?")
 	;;
+
     *)
 	echo "option $1 not recognized"
 	echo "usage: package install|remove|installed? <item>"

@@ -1,4 +1,5 @@
 require 'package'
+require 'packages/general'
 
 site_lisp_dir = '/usr/local/share/emacs/site-lisp'
 package :my_emacs, {
