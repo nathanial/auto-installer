@@ -11,14 +11,11 @@ then
     aptitude -y install ruby
 fi
 
-if [ -z /root/.ssh/id_rsa ]
-then
-    ruby -e "
+ruby -e "
 require 'package'
 require 'packages/general'
 Package.run_install_hooks(:git)
 "
-fi
 
 case "$1" in 
     "install")
