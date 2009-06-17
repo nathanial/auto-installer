@@ -10,20 +10,19 @@ end
 
 def package(name, kwargs)
   defaults = {:depends => [], :install => do_nothing,
-              :remove => do_nothing, :installed? => do_nothing}
+    :remove => do_nothing, :installed? => do_nothing}
   kwargs = defaults.update(kwargs)
   dependencies = kwargs[:depends]
   p = Package.new(name, dependencies)
   p.install_callback = kwargs[:install]
   p.remove_callback = kwargs[:remove]
   p.installed_callback = kwargs[:installed?]
-	puts "installed callback = #{p.installed_callback.class}"
   p.register
   return p
 end
 
 def meta_package(name, kwargs)
-	package(name, kwargs)
+  package(name, kwargs)
 end
 
 def aptitude_package(name, aptitude_name)
