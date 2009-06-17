@@ -1,0 +1,3 @@
+#!/bin/sh
+
+java -jar /var/selenium/remote-control/selenium-server-1.0.1/selenium-server.jar

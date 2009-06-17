@@ -1,4 +1,5 @@
 require 'package'
+require 'packages/general'
 
 package :activemq, {
   :depends => [:java, :svn],

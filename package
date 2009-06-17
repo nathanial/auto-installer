@@ -1,0 +1,35 @@
+#!/bin/sh
+
+if [ "$(whoami)" != "root" ]
+then
+    echo "must be root to run this script"
+    exit 1
+fi
+
+if [ -z $(which ruby) ]
+then
+    aptitude -y install ruby
+fi
+    
+case "$1" in 
+    "install")
+	ruby -e "
+require 'package'
+require 'packages/$2'
+Package.install(:$2)
+"
+	;;
+    "remove")
+	ruby -e "
+require 'package'
+require 'packages/$2'
+Package.remove(:$2)
+"
+	;;
+    "installed?")
+	;;
+    *)
+	echo "option $1 not recognized"
+	echo "usage: package install|remove|installed? <item>"
+	;;
+esac

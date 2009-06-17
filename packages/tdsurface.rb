@@ -1,7 +1,9 @@
 require 'package'
+require 'packages/django'
+require 'packages/general'
 
 def python_site_packages 
-	`python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
+  `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
 end
 
 package :tdsurface, {
@@ -31,6 +33,7 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
     system("cp support/tdsurface_apache.conf /etc/apache2/conf.d/tdsurface")
     system("service apache2 restart")
   },
+
   :remove => procedure {
     system("rm -rf /var/django-projects")
     system("rm -rf /var/matplotlib")
@@ -42,6 +45,7 @@ DROP USER 'tdsurface'@'localhost';\"
 """)
     system("rm /etc/apache2/conf.d/tdsurface")
   },
+
   :installed? => procedure {
     File.exists? '/var/django-projects'
   }    
