@@ -2,10 +2,6 @@ require 'package'
 require 'packages/django'
 require 'packages/general'
 
-def python_site_packages 
-  `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
-end
-
 package :tdsurface, {
   :depends => [:mysql_server, :apache2,
                :svn, :git, :django,

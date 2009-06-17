@@ -38,3 +38,7 @@ meta_package :python, {
     Package.installed?(:python26)
   }	
 }
+
+def python_site_packages 
+  `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
+end
