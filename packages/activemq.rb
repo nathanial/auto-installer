@@ -2,8 +2,9 @@ require 'package'
 require 'packages/general'
 
 package :activemq, {
-  :depends => [:java, :svn],
-  :install => procedure {
+  depends_on :java, :svn
+
+  install {
     system("wget http://mirror-fpt-telecom.fpt.net/apache/activemq/apache-activemq/5.2.0/apache-activemq-5.2.0-bin.tar.gz")
     system("tar xf apache-activemq-5.2.0-bin.tar.gz")
     system("mv -v apache-activemq-5.2.0 /opt/apache-activemq-5.2.0")
@@ -12,14 +13,16 @@ package :activemq, {
     system("cp -v support/activemq /etc/init.d/")
     system("chmod a+x /etc/init.d/activemq")
     system("update-rc.d activemq defaults")
-  },
-  :remove => procedure {
+  }
+  
+  remove {
     system("rm -rf /opt/active-mq")
     system("rm -rf /opt/apache-activemq-5.2.0")
     system("update-rc.d -f activemq remove")
     systme("rm /etc/init.d/activemq")
-  },
-  :installed? => procedure {
+  }
+
+  installed? {
     File.exists?("/opt/apache-activemq-5.2.0")
   }
 }

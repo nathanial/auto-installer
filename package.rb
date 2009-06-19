@@ -1,48 +1,5 @@
 require 'graph'
 
-def procedure(&block)
-  lambda { block.call }
-end
-
-def do_nothing
-  Proc.new {}
-end
-
-def package(name, kwargs)
-  defaults = {:depends => [], :install => do_nothing,
-    :remove => do_nothing, :installed? => do_nothing}
-  kwargs = defaults.update(kwargs)
-  dependencies = kwargs[:depends]
-  p = Package.new(name, dependencies)
-  p.install_callback = kwargs[:install]
-  p.remove_callback = kwargs[:remove]
-  p.installed_callback = kwargs[:installed?]
-  p.register
-  return p
-end
-
-def meta_package(name, kwargs)
-  package(name, kwargs)
-end
-
-def aptitude_package(name, aptitude_name)
-  p = AptitudePackage.new(name, aptitude_name)
-  p.register
-  return p
-end
-
-def aptitude_packages(packages)
-  names = packages.keys
-  for name in names
-    aptitude_package(name, packages[name])
-  end
-end
-
-def add_install_hook(name, callback)
-  package = Package.lookup(name)
-  package.add_install_hook(callback)
-end
-
 class Package
   @@registered_packages = {}
   attr_accessor :install_callback, :remove_callback, :installed_callback  
@@ -161,4 +118,35 @@ class AptitudePackage < Package
   end
 end
 		
-    
+class PackageBuilder
+  attr_accessor :package
+  
+  def initialize(name)
+    @package = Package.new(name)
+    @package.register
+  end
+  
+  def install(&block)
+  end
+
+  def remove(&block)
+  end
+  
+  def installed?(&block)
+  end
+  
+end
+
+def package(name, &block)
+  PackageBuilder.new(name).instance_eval(&block).package
+end
+
+def meta_package(name, &block)
+end
+
+def aptitude_packages(hash)
+  names = hash.keys
+  for name in names
+    AptitudePackage.new(name, hash[name]).register
+  end
+end

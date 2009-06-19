@@ -1,36 +1,35 @@
 require 'package'
 require 'packages/general'
 
-site_lisp_dir = '/usr/local/share/emacs/site-lisp'
-package :my_emacs, {
-  :depends => [:emacs, :git],
-  :install => procedure {
+package :my_emacs {
+  depends_on :emacs, :git
+  site_lisp_dir = "/usr/share/emacs/site-lisp"
+  install {
     system("git clone git://github.com/nathanial/my-site-lisp")
     system("rm -rf #{site_lisp_dir}")
     system("mv my-site-lisp #{site_lisp_dir}")
-  },
-  :remove => procedure {
+  }
+  remove {
     raise "not implemented"
-  },
-  :installed? => procedure {
+  }
+  installed? {
     File.exists? "#{site_lisp_dir}/mode-loader.el"
   }
 }
 
-package :my_keybindings, {
-  :depends => [],
-  :install => procedure {
+package :my_keybindings {
+  install {
     system("cp support/xmodmap ~/.xmodmap")
     system("xmodmap ~/.xmodmap")
-  },
-  :remove => procedure {
+  }    
+  remove {
     system("rm ~/.xmodmap")
-  },
-  :installed? => procedure {
+  }
+  installed? {
     File.exists? "~/.xmodmap"
   }
 }
 
-package :my_environment, {
-  :depends => [:my_emacs, :my_keybindings]
+meta_package :my_environment {
+  consists_of :my_emacs, :my_keybindings
 }

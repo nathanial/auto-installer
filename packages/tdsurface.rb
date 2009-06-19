@@ -2,13 +2,11 @@ require 'package'
 require 'packages/django'
 require 'packages/general'
 
-package :tdsurface, {
-  :depends => [:mysql_server, :apache2,
-               :svn, :git, :django,
-               :python_tz, :matplotlib,
-               :mod_python, :python_mysqldb],
+package :tdsurface {
+  depends_on [:mysql_server, :apache2, :svn, :git, :django,
+              :python_tz, :matplotlib, :mod_python, :python_mysqldb]
 
-  :install => procedure {
+  install {
     system("mkdir /var/django-projects")
     system("git clone git@github.com:teledrill/tdsurface.git /var/django-projects/tdsurface")
     system("cp support/django_local_settings.py /var/django-projects/tdsurface/settings_local.py")
@@ -28,9 +26,9 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
     system("python /var/django-projects/tdsurface/manage.py syncdb")
     system("cp support/tdsurface_apache.conf /etc/apache2/conf.d/tdsurface")
     system("service apache2 restart")
-  },
+  }
 
-  :remove => procedure {
+  remove {
     system("rm -rf /var/django-projects")
     system("rm -rf /var/matplotlib")
     system("rm -rf /var/log/tdsurface")
@@ -40,9 +38,9 @@ DROP DATABASE tdsurface;
 DROP USER 'tdsurface'@'localhost';\"
 """)
     system("rm /etc/apache2/conf.d/tdsurface")
-  },
+  }
 
-  :installed? => procedure {
+  installed? => procedure {
     File.exists? '/var/django-projects'
   }    
 }
