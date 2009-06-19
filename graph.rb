@@ -68,7 +68,7 @@ class Graph
     queue = [node]
     while not queue.empty?
       parent = queue.shift
-      yield parent
+      block.call(parent)
       for child in cursor.children
         queue << child
       end
