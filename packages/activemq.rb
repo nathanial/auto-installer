@@ -14,7 +14,10 @@ package :activemq, {
     system("update-rc.d activemq defaults")
   },
   :remove => procedure {
-    raise "not implemented"
+    system("rm -rf /opt/active-mq")
+    system("rm -rf /opt/apache-activemq-5.2.0")
+    system("update-rc.d -f activemq remove")
+    systme("rm /etc/init.d/activemq")
   },
   :installed? => procedure {
     File.exists?("/opt/apache-activemq-5.2.0")

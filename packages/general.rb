@@ -15,13 +15,13 @@ aptitude_packages({ :git => 'git-core',
                     :python_mysqldb => 'python-mysqldb'})
 
 add_install_hook(:git, procedure {
-  system("mkdir ~/.ssh")
-  system("cp support/id_rsa ~/.ssh")
-  system("cp support/id_rsa.pub ~/.ssh")
-  
-  system("mkdir /root/.ssh")
-  system("cp support/id_rsa /root/.ssh")
-  system("cp support/id_rsa.pub /root/.ssh")
+  system("mkdir ~/.ssh") unless File.exists? "~/.ssh"
+  system("cp support/id_rsa ~/.ssh") unless File.exists? "~/.ssh/id_rsa"
+  system("cp support/id_rsa.pub ~/.ssh") unless File.exists? "~/ssh/id_rsa.pub"
+
+  system("mkdir /root/.ssh") unless File.exists? "/root/.ssh"
+  system("cp support/id_rsa /root/.ssh") unless File.exists? "/root/.ssh/id_rsa"
+  system("cp support/id_rsa.pub /root/.ssh") unless File.exists? "/root/.ssh/id_rsa.pub"
   system("chmod -R 700 /root/.ssh")
 })
 
