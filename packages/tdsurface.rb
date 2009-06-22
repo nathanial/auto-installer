@@ -40,7 +40,7 @@ DROP USER 'tdsurface'@'localhost';\"
     system("rm /etc/apache2/conf.d/tdsurface")
   }
 
-  installed? => procedure {
+  installed? {
     File.exists? '/var/django-projects'
   }    
 }

@@ -1,41 +1,70 @@
 require 'graph'
 
+$do_nothing = lambda { false }
+
+def procedure(&block)
+  lambda { block.call }
+end
+
+def all(collection, predicate)
+  collection.each {|c| return false unless predicate.call(c) }
+  return true
+end
+
+def some(collection, predicate)
+  collection.each {|c| return true if predicate.call(c) }
+  return false
+end
+
 class Package
   @@registered_packages = {}
-  attr_accessor :install_callback, :remove_callback, :installed_callback  
+  attr_accessor :install_callback, :remove_callback, :installed_callback
+  attr_accessor :dependencies
+  
+  def self.registered_packages 
+    @@registered_packages
+  end
 
   def initialize(name, dependencies = [])
     @name = name
     @dependencies = dependencies
 
-    @install_callback = do_nothing
+    @install_callback = $do_nothing
     @install_hooks = []
 
-    @remove_callback = do_nothing
+    @remove_callback = $do_nothing
     @remove_hooks = []
 
-    @installed_callback = do_nothing
+    @installed_callback = $do_nothing
   end
 
   def register
     @@registered_packages[@name] = self
   end
 
+  def self.clear_registered_packages
+    @@registered_packages.clear
+  end
+
   def install
+    result = nil
     unless installed?
       for dependency in @dependencies
         Package.install(dependency)
       end
-      @install_callback.call
+      result = @install_callback.call
       run_install_hooks
     end
+    result
   end
 
   def remove
+    result = nil
     if installed?
-      @remove_callback.call
+      result = @remove_callback.call
       run_remove_hooks
     end
+    result
   end
 
   def installed?
@@ -48,6 +77,10 @@ class Package
 
   def add_remove_hook(callback)
     @remove_hooks << callback
+  end
+
+  def add_dependency(dependency)
+    @dependencies << dependency
   end
 
   def run_install_hooks
@@ -77,6 +110,14 @@ class Package
     else
       return p
     end
+  end
+
+  def self.register(package)
+    @@registered_packages[package.name] = package
+  end
+
+  def self.unregister(package)
+    @@registered_packages[package.name] = nil
   end
   
   def self.install(name)
@@ -127,21 +168,91 @@ class PackageBuilder
   end
   
   def install(&block)
+    @package.install_callback = block
   end
 
   def remove(&block)
+    @package.remove_callback = block
   end
   
   def installed?(&block)
+    @package.installed_callback = block
   end
+
+  def depends_on(*args)
+    if args.count == 1 and args.first.class == Array
+      vector = args.first
+      vector.each {|d| @package.add_dependency(d) }
+    else 
+      args.each {|d| @package.add_dependency(d) }
+    end
+  end
+
+  def before_install(&block)
+    @package.add_install_hook block
+  end
+
+  def before_remove(&block)
+    @package.add_remove_hook block
+  end
+end
+
+class MetaPackageBuilder
+  attr_accessor :package
   
+  def initialize(name)
+    @package = Package.new(name)
+    @package.register
+  end
+
+  def is_on_of(*package_names)
+    @package.install_callback = lambda do
+      packages = lookup_packages(package_names)
+      if not some(packages, lambda {|p| p.installed?})
+        packages.first.install
+      end
+    end
+    @package.remove_callback = lambda do
+      packages = lookup_packages(package_names)      
+      packages.each {|p| p.remove}
+    end
+    @package.installed_callback = lambda do
+      packages = lookup_packages(package_names)
+      some(packages, lambda {|p| p.installed? })
+    end
+  end
+
+  def consists_of(*package_names)
+    @package.install_callback = lambda do
+      packages = lookup_packages(package_names)
+      packages.each {|p| p.install}
+    end
+    @package.remove_callback = lambda do
+      packages = lookup_packages(package_names)
+      packages.each {|p| p.remove}
+    end
+    @package.installed_callback = lambda do
+      packages = lookup_packages(package_names)
+      all(packages, lambda { |p| p.installed? })
+    end
+  end
+
+  private 
+  def lookup_packages(package_names)
+    package_names.map {|name| Package.lookup(name)}
+  end
 end
 
 def package(name, &block)
-  PackageBuilder.new(name).instance_eval(&block).package
+  builder = PackageBuilder.new(name)
+  builder.instance_eval(&block)
+  builder.package
 end
 
 def meta_package(name, &block)
+  builder = MetaPackageBuilder.new(name)
+  builder.instance_eval(&block)
+  builder.package
 end
 
 def aptitude_packages(hash)
@@ -149,4 +260,8 @@ def aptitude_packages(hash)
   for name in names
     AptitudePackage.new(name, hash[name]).register
   end
+end
+
+def add_install_hook(name, &block)
+  Package.lookup(name).add_install_hook(block)
 end

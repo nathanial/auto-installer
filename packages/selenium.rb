@@ -1,7 +1,7 @@
 require 'package'
 require 'packages/general'
 
-package :selenium {
+package :selenium do
   depends_on :java
   install {
     system("wget http://release.seleniumhq.org/selenium-remote-control/1.0.1/selenium-remote-control-1.0.1-dist.zip")
@@ -17,7 +17,6 @@ package :selenium {
     system("rm /usr/bin/start-selenium")
   }
   installed? {
-    File.exists? '/var/selenium' and
-    File.exists? '/usr/bin/start-selenium'
+    File.exists? '/var/selenium' and File.exists? '/usr/bin/start-selenium'
   }
-}
+end
