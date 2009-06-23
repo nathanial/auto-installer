@@ -11,12 +11,6 @@ then
     aptitude -y install ruby
 fi
 
-ruby -e "
-require 'package'
-require 'packages/general'
-Package.run_install_hooks(:git)
-"
-
 case "$1" in 
     "install")
 	ruby -e "
