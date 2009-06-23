@@ -16,7 +16,7 @@ case "$1" in
 	ruby -e "
 require 'package'
 require 'packages/$2'
-Package.install(:$2)
+Packages.install(:$2)
 "
 	;;
 
@@ -24,13 +24,9 @@ Package.install(:$2)
 	ruby -e "
 require 'package'
 require 'packages/$2'
-Package.remove(:$2)
+Packages.remove(:$2)
 "
 	;;
-
-    "installed?")
-	;;
-
     *)
 	echo "option $1 not recognized"
 	echo "usage: package install|remove|installed? <item>"
