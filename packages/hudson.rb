@@ -1,7 +1,7 @@
 require 'package'
 require 'packages/general'
 
-package :hudson {
+package(:hudson) {
   depends_on :java
   install {
     system("wget https://hudson.dev.java.net/files/documents/2402/136743/hudson.war")

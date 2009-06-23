@@ -1,7 +1,7 @@
 require 'package'
 require 'packages/general'
 
-package :my_emacs {
+package(:my_emacs) {
   depends_on :emacs, :git
   site_lisp_dir = "/usr/share/emacs/site-lisp"
   install {
