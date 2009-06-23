@@ -2,7 +2,7 @@ require 'package'
 require 'packages/django'
 require 'packages/general'
 
-package :tdsurface {
+package(:tdsurface) {
   depends_on [:mysql_server, :apache2, :svn, :git, :django,
               :python_tz, :matplotlib, :mod_python, :python_mysqldb]
 
