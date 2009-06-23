@@ -16,44 +16,56 @@ def some(collection, predicate)
   return false
 end
 
-class Package
-  @@registered_packages = {}
-  attr_accessor :install_callback, :remove_callback, :installed_callback
-  attr_accessor :dependencies
-  
-  def self.registered_packages 
-    @@registered_packages
+class PackageDirectory < Hash
+  def register(package)
+    self[package.name] = package
   end
 
-  def initialize(name, dependencies = [])
+  def unregister(package)
+    if package.class == Symbol
+      self[package] = nil
+    else
+      self[package.name] = nil
+    end
+  end
+end
+
+class Defaults
+  @@package_directory = PackageDirectory.new
+  
+  def self.package_directory 
+    @@package_directory
+  end
+end
+
+class Package
+  attr_accessor :install_callback, :remove_callback, :installed_callback
+  attr_accessor :name, :before_install_hooks, :after_install_hooks
+  attr_accessor :before_remove_hooks, :after_remove_hooks
+
+  def initialize(name, directory = Defaults.package_directory, dependency_names = [])
     @name = name
-    @dependencies = dependencies
+    @directory = directory
+    @dependency_names = dependency_names
 
     @install_callback = $do_nothing
-    @install_hooks = []
+    @before_install_hooks = []
+    @after_install_hooks = []
 
     @remove_callback = $do_nothing
-    @remove_hooks = []
+    @before_remove_hooks = []
+    @after_remove_hooks = []
 
     @installed_callback = $do_nothing
-  end
-
-  def register
-    @@registered_packages[@name] = self
-  end
-
-  def self.clear_registered_packages
-    @@registered_packages.clear
   end
 
   def install
     result = nil
     unless installed?
-      for dependency in @dependencies
-        Package.install(dependency)
-      end
+      run_install_hooks(:before)
+      dependencies.each {|d| d.install}
       result = @install_callback.call
-      run_install_hooks
+      run_install_hooks(:after)
     end
     result
   end
@@ -61,8 +73,9 @@ class Package
   def remove
     result = nil
     if installed?
+      run_remove_hooks(:before)
       result = @remove_callback.call
-      run_remove_hooks
+      run_remove_hooks(:after)
     end
     result
   end
@@ -71,87 +84,86 @@ class Package
     @installed_callback.call
   end
 
-  def add_install_hook(callback)
-    @install_hooks << callback
+  def add_install_hook(where, callback)
+    case where
+      when :before then @before_install_hooks << callback
+      when :after then @after_install_hooks << callback
+      else raise "where must be :before or :after"
+    end
   end
 
-  def add_remove_hook(callback)
-    @remove_hooks << callback
+  def add_remove_hook(where, callback)
+    case where
+    when :before then @before_remove_hooks << callback
+    when :after then @after_remove_hooks << callback
+    else raise "where must be :before or :after"
+    end
   end
 
   def add_dependency(dependency)
-    @dependencies << dependency
+    @dependency_names << dependency
   end
 
-  def run_install_hooks
-    @install_hooks.each {|hook| hook.call}
-  end
-
-  def run_remove_hooks
-    @remove_hooks.each {|hook| hook.call}
-  end
-
-  def dependency_graph(is_root = true)
-    root = Node.new @name, @dependencies.map do |n|
-      p = registered_packages[n] or raise "#{n} not registered"
-      p.dependency_graph(false)
-    end
-    if is_root
-      return Graph.new(root)
-    else
-      return root
+  def run_install_hooks(which = :all)
+    case which
+    when :before then @before_install_hooks.each {|h| h.call}
+    when :after then @after_install_hooks.each {|h| h.call}
+    when :all then 
+      run_install_hooks(:before)
+      run_install_hooks(:after)
+    else raise "which must be :before|:after|:all"
     end
   end
 
-  def self.lookup(name)
-    p = @@registered_packages[name]
-    if p.nil? 
-      raise "cannot find package named #{name}"
-    else
-      return p
-    end
+  def run_remove_hooks(which = :all)
+    case which
+    when :before then @before_remove_hooks.each {|h| h.call}
+    when :after then @after_remove_hooks.each {|h| h.call}
+    when :all then 
+      run_remove_hooks(:before)
+      run_remove_hooks(:after)
+    else raise "which must be :before|:after|:all"
+    end    
   end
 
-  def self.register(package)
-    @@registered_packages[package.name] = package
+  def register
+    @directory.register(self)
   end
 
-  def self.unregister(package)
-    @@registered_packages[package.name] = nil
-  end
-  
-  def self.install(name)
-    lookup(name).install
+  def unregister
+    @directory.unregister(self)
   end
 
-  def self.installed?(name)
-    lookup(name).installed?
-  end
-
-  def self.remove(name)
-    lookup(name).remove
-  end
-
-  def self.run_install_hooks(name)
-    lookup(name).run_install_hooks
-  end
-
-  def self.run_remove_hooks(name)
-    lookup(name).run_remove_hooks
+  def dependencies
+    @dependency_names.map {|name| @directory[name]}
   end
 end  
 
+class Packages 
+  def self.packages
+    Defaults.package_directory
+  end
+
+  def self.install(name)
+    packages[name].install
+  end
+
+  def self.remove(name)
+    packages[name].remove
+  end
+end
+
 class AptitudePackage < Package
-  def initialize(name, aptitude_name)
-    super(name, [])
+  def initialize(name, aptitude_name, directory=Defaults.package_directory)
+    super(name, directory, [])
     @aptitude_name = aptitude_name
-    @install_callback = procedure {
+    @install_callback = lambda {
       system("aptitude -y install #@aptitude_name")
     }
-    @remove_callback = procedure {
+    @remove_callback = lambda {
       system("aptitude -y remove #@aptitude_name")
     }
-    @installed_callback = procedure {
+    @installed_callback = lambda {
       search_results = `aptitude search #@aptitude_name`
       installed = search_results.reject {|r| not r =~ /^i/}
       not installed.empty?
@@ -189,11 +201,19 @@ class PackageBuilder
   end
 
   def before_install(&block)
-    @package.add_install_hook block
+    @package.add_install_hook :before, block
   end
 
   def before_remove(&block)
-    @package.add_remove_hook block
+    @package.add_remove_hook :before, block
+  end
+
+  def after_install(&block)
+    @package.add_install_hook :after, block
+  end
+
+  def after_remove(&block)
+    @package.add_remove_hook :after, block
   end
 end
 
@@ -202,10 +222,11 @@ class MetaPackageBuilder
   
   def initialize(name)
     @package = Package.new(name)
+    @directory = Defaults.package_directory
     @package.register
   end
 
-  def is_on_of(*package_names)
+  def is_one_of(*package_names)
     @package.install_callback = lambda do
       packages = lookup_packages(package_names)
       if not some(packages, lambda {|p| p.installed?})
@@ -239,7 +260,7 @@ class MetaPackageBuilder
 
   private 
   def lookup_packages(package_names)
-    package_names.map {|name| Package.lookup(name)}
+    package_names.map {|name| @directory[name]}
   end
 end
 
@@ -260,8 +281,4 @@ def aptitude_packages(hash)
   for name in names
     AptitudePackage.new(name, hash[name]).register
   end
-end
-
-def add_install_hook(name, &block)
-  Package.lookup(name).add_install_hook(block)
 end
