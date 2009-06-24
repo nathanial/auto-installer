@@ -2,6 +2,10 @@ require 'graph'
 
 $do_nothing = lambda { false }
 
+def shell_out(text)
+  raise "shell error with #{text}" unless system(text)
+end
+
 def procedure(&block)
   lambda { block.call }
 end
