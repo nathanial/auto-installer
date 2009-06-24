@@ -1,21 +1,32 @@
 require 'package'
 require 'packages/general'
+require 'rubygems'
+require 'httpclient'
+require 'parseconfig'
+require 'fileutils'
+include FileUtils
 
 package(:selenium) {
   depends_on :java
+  selenium_url = "http://release.seleniumhq.org/selenium-remote-control/1.0.1/selenium-remote-control-1.0.1-dist.zip"
+
   install {
-    system("wget http://release.seleniumhq.org/selenium-remote-control/1.0.1/selenium-remote-control-1.0.1-dist.zip")
-    system("unzip selenium*")
-    system("mkdir /var/selenium")    
-    system("mv selenium* /var/selenium")
-    system("ln -s /var/selenium/selenium-remote-control-1.0.1 /var/selenium/remote-control")
-    system("cp support/start-selenium /usr/bin/")
-    system("chmod a+x /usr/bin/start-selenium")
+    client = HTTPClient.new
+    open("selenium-remote-control.zip", "wb") do |file|
+      file.write(client.get_content(selenium_url))
+    end
+    shell_out("unzip selenium-remote-control.zip -d selenium")
+    mv 'selenium', '/var/selenium'
+    ln_s '/var/selenium/selenium-remote-control-1.0.1', '/var/selenium/remote-control'
+    cp 'support/start-selenium', '/usr/bin/'
+    chmod 0005, '/usr/bin/start-selenium'
   }
+
   remove {
-    system("rm -rf /var/selenium")
-    system("rm /usr/bin/start-selenium")
+    rm_rf '/var/selenium'
+    rm_f '/usr/bin/start-selenium'
   }
+
   installed? {
     File.exists? '/var/selenium' and File.exists? '/usr/bin/start-selenium'
   }

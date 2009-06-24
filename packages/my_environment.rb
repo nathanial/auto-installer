@@ -1,16 +1,18 @@
 require 'package'
 require 'packages/general'
+require 'fileutils'
+include FileUtils
 
 package(:my_emacs) {
   depends_on :emacs, :git
   site_lisp_dir = "/usr/share/emacs/site-lisp"
   install {
-    system("git clone git://github.com/nathanial/my-site-lisp")
-    system("rm -rf #{site_lisp_dir}")
-    system("mv my-site-lisp #{site_lisp_dir}")
+    shell_out("git clone git://github.com/nathanial/my-site-lisp")
+    rm_rf "#{site_lisp_dir}"
+    mv "my-site-lisp", "#{site_lisp_dir}"
   }
   remove {
-    raise "not implemented"
+    rm_rf "#{site_lisp_dir}"
   }
   installed? {
     File.exists? "#{site_lisp_dir}/mode-loader.el"
@@ -19,11 +21,11 @@ package(:my_emacs) {
 
 package :my_keybindings {
   install {
-    system("cp support/xmodmap ~/.xmodmap")
-    system("xmodmap ~/.xmodmap")
+    cp "support/xmodmap", "~/.xmodmap"
+    shell_out('xmodmap ~/.xmodmap')
   }    
   remove {
-    system("rm ~/.xmodmap")
+    rm '~/.xmodmap'
   }
   installed? {
     File.exists? "~/.xmodmap"
