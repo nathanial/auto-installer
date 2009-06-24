@@ -1,22 +1,29 @@
 require 'package'
 require 'packages/general'
+require 'rubygems'
+require 'httpclient'
+require 'fileutils'
+include FileUtils
 
 package(:hudson) {
   depends_on :java
   install {
-    system("wget http://hudson-ci.org/latest/hudson.war")
-    system("mkdir -v /opt/hudson")
-    system("mv -v hudson.war /opt/hudson/")
-    system("cp -v support/run-hudson /opt/hudson/")
-    system("cp -v support/hudson /etc/init.d/")
-    system("update-rc.d hudson defaults")
-    system("chmod a+rw /opt/hudson/run-hudson")
-    system("chmod a+rw /etc/init.d/hudson")
+    client = HTTPClient.new
+    open("hudson.war", "wb") do |file|
+      file.write(client.get_content("http://hudson-ci.org/latest/hudson.war"))
+    end
+    mkdir '/opt/hudson'
+    mv 'hudson.war', '/opt/hudson/'
+    cp 'support/run-hudson', '/opt/hudson/'
+    cp 'support/hudson', '/etc/init.d/'
+    shell_out('update-rc.d hudson defaults')
+    chmod 0005, '/opt/hudson/run-hudson'
+    chmod 0005, '/etc/init.d/hudson'
   }
   remove {
-    system("update-rc.d -f hudson remove")
-    system("rm -rfv /opt/hudson/")
-    system("rm -v /etc/init.d/hudson")
+    shell_out("update-rc.d -f hudson remove")
+    rm_rf '/opt/hudson/'
+    rm_f '/etc/init.d/hudson'
   }
   installed? {
     File.exists? "/opt/hudson/hudson.war"
