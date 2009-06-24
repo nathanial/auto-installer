@@ -16,6 +16,13 @@ def some(collection, predicate)
   return false
 end
 
+def shell_out(text)
+  lines = text.split("\n").select {|line| line.strip != ''}
+  lines.each do |line|
+    raise "shell error with #{line}" unless system(line)
+  end
+end
+
 class PackageDirectory < Hash
   def register(package)
     self[package.name] = package
