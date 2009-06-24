@@ -1,5 +1,7 @@
 require 'graph'
 
+raise "just seeing if build works"
+
 $do_nothing = lambda { false }
 
 def procedure(&block)
