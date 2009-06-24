@@ -4,23 +4,18 @@ require 'packages/general'
 package(:hudson) {
   depends_on :java
   install {
-    shell_out("""
-    wget http://hudson-ci.org/latest/hudson.war
-    mkdir -v /opt/hudson
-    mv -v hudson.war /opt/hudson/
-    cp -v support/run-hudson /opt/hudson/
-    cp -v support/hudson /etc/init.d/
-    update-rc.d hudson defaults
-    chmod a+rx /etc/init.d/hudson
-    chmod a+rx /opt/hudson/run-hudson
-    """)
+    system("wget https://hudson.dev.java.net/files/documents/2402/136743/hudson.war")
+    system("mkdir -v /opt/hudson")
+    system("mv -v hudson.war /opt/hudson/")
+    system("cp -v support/run-hudson /opt/hudson/")
+    system("cp -v support/hudson /etc/init.d/")
+    system("update-rc.d hudson defaults")
   }
   remove {
-    shell_out("""
-    update-rc.d -f hudson remove
-    rm -rfv /opt/hudson/
-    rm -v /etc/init.d/hudson
-    """)
+    system("update-rc.d hudson remove")
+    system("rm -rfv /opt/hudson/")
+    system("rm -v /etc/init.d/hudson")
+    system("rm -v /etc/init.d/run-hudson")
   }
   installed? {
     File.exists? "/opt/hudson/hudson.war"
