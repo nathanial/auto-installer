@@ -177,7 +177,7 @@ class AptitudePackage < Package
     @aptitude_name = aptitude_name
     @install_callback = lambda {
       system("aptitude -y install #@aptitude_name")
-    }
+    }   
     @remove_callback = lambda {
       system("aptitude -y remove #@aptitude_name")
     }
@@ -191,8 +191,11 @@ end
 		
 class PackageBuilder
   attr_accessor :package
-  
+
   def initialize(name)
+    @home = ENV['AUTO_INSTALLER_HOME']
+    @support = "#@home/support"
+    @downloads = "#@home/downloads"
     @package = Package.new(name)
     @package.register
   end

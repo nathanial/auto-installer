@@ -13,14 +13,14 @@ package(:activemq) {
 
   install {
     client = HTTPClient.new
-    open("activemq.tar.gz", "wb") do |file|
+    open("#@home/downloads/activemq.tar.gz", "wb") do |file|
       file.write(client.get_content(apache_activemq_url))
     end
-    shell_out("tar xf activemq.tar.gz")
-    mv 'apache-activemq-5.2.0', '/opt/apache-activemq-5.2.0'
+    shell_out("tar xf #@home/downloads/activemq.tar.gz -C #@home")
+    mv "#@home/apache-activemq-5.2.0", '/opt/apache-activemq-5.2.0'
     ln_s '/opt/apache-activemq-5.2.0', '/opt/active-mq'
     ln_s '/opt/apache-activemq-5.2.0/bin/linux-x86-32', '/opt/apache-activemq-5.2.0/bin/linux'
-    cp 'support/activemq', '/etc/init.d/'
+    cp "#@home/support/activemq", '/etc/init.d/'
     chmod 0005, '/etc/init.d/activemq'
     shell_out("update-rc.d activemq defaults")
     

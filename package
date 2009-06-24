@@ -1,5 +1,8 @@
 #!/bin/sh
 
+AUTO_INSTALLER_HOME="/var/development/auto-installer"
+export AUTO_INSTALLER_HOME
+
 if [ "$(whoami)" != "root" ]
 then
     echo "must be root to run this script"
@@ -11,9 +14,17 @@ then
     aptitude -y install ruby
 fi
 
+if [ -z $AUTO_INSTALLER_HOME/downloads ]; then
+    touch $AUTO_INSTALLER_HOME/downloads
+fi
+if [ -z $AUTO_INSTALLER_HOME/support ]; then 
+    touch $AUTO_INSTALLER_HOME/support
+fi
+
 case "$1" in 
     "install")
 	ruby -e "
+\$LOAD_PATH << ENV['AUTO_INSTALLER_HOME']
 require 'package'
 require 'packages/$2'
 Packages.install(:$2)
@@ -22,6 +33,7 @@ Packages.install(:$2)
 
     "remove")
 	ruby -e "
+\$LOAD_PATH << ENV['AUTO_INSTALLER_HOME']
 require 'package'
 require 'packages/$2'
 Packages.remove(:$2)

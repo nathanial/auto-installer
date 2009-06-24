@@ -7,25 +7,30 @@ include FileUtils
 
 package(:hudson) {
   depends_on :java
+
   install {
     client = HTTPClient.new
-    open("hudson.war", "wb") do |file|
+    open("#@downloads/hudson.war", "wb") do |file|
       file.write(client.get_content("http://hudson-ci.org/latest/hudson.war"))
     end
     mkdir '/opt/hudson'
-    mv 'hudson.war', '/opt/hudson/'
-    cp 'support/run-hudson', '/opt/hudson/'
-    cp 'support/hudson', '/etc/init.d/'
+    mv "#@downloads/hudson.war", '/opt/hudson/'
+    cp "#@support/run-hudson", '/opt/hudson/'
+    cp "#@support/hudson", '/etc/init.d/'
     shell_out('update-rc.d hudson defaults')
     chmod 0005, '/opt/hudson/run-hudson'
     chmod 0005, '/etc/init.d/hudson'
+    shell_out("service hudson start")
   }
+
   remove {
-    shell_out("update-rc.d -f hudson remove")
+    system("service hudson stop")
+    system("update-rc.d -f hudson remove")
     rm_rf '/opt/hudson/'
     rm_f '/etc/init.d/hudson'
   }
+
   installed? {
-    File.exists? "/opt/hudson/hudson.war"
+    File.exists? "/opt/hudson/" 
   }
 }
