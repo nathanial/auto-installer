@@ -16,7 +16,6 @@ aptitude_packages({
   :python_mysqldb => 'python-mysqldb'
 })
 
-meta_package :python do
+meta_package(:python) {
   is_one_of :python25, :python26
-end
-
+}

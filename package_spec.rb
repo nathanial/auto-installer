@@ -17,30 +17,28 @@ describe "the some predicate" do
 end
 
 describe Package do 
-  packages = Defaults.package_directory
   after(:each) do 
-    packages.clear
+    Packages.clear
   end
 
   describe "register" do
     it "should increment package_directory.count" do
       lambda {
         Package.new(:foo).register 
-      }.should change(packages, :count).from(0).to(1)
+      }.should change(Packages, :count).from(0).to(1)
     end
   end
 end
 
 describe "package" do 
-  packages = Defaults.package_directory
   after(:each) do 
-    packages.clear
+    Packages.clear
   end
   
   it "should self register" do
     package(:foo) {}
-    packages.count.should eql(1)
-    lambda { packages[:foo] }.should_not raise_error
+    Packages.count.should eql(1)
+    lambda { Packages.lookup(:foo) }.should_not raise_error
   end
 
   describe "defaults" do
@@ -69,7 +67,7 @@ describe "package" do
         }
         installed? { false }
       }
-      packages[:foo].install.should eql("I install")
+      Packages.install(:foo).should eql("I install")
     end
   end
 
@@ -81,7 +79,7 @@ describe "package" do
         }
         installed? { true }
       }
-      packages[:foo].remove.should eql("I remove")
+      Packages.remove(:foo).should eql("I remove")
     end
   end
 
@@ -92,7 +90,7 @@ describe "package" do
           "I'm installed" 
         }
       }
-      packages[:foo].installed?.should eql("I'm installed")
+      Packages.installed?(:foo).should eql("I'm installed")
     end
   end
     
@@ -127,7 +125,7 @@ describe "package" do
       package(:foo) {
         after_install {}
       }
-      packages[:foo].after_install_hooks.count.should eql(1)
+      Packages.lookup(:foo).after_install_hooks.count.should eql(1)
     end
   end
     
@@ -138,7 +136,7 @@ describe "package" do
         flag = true
       }
     }
-    packages[:foo].run_remove_hooks
+    Packages.run_remove_hooks(:foo)
     flag.should be_true
   end
 
@@ -153,52 +151,51 @@ describe "package" do
 end
   
 describe "meta_package method" do
-  packages = Defaults.package_directory
   before(:each) do
-    packages.clear
+    Packages.clear
   end
 
   it "should register a package" do
     meta_package(:foo) {}
-    packages.count.should eql(1)
+    Packages.count.should eql(1)
   end
 
   describe "consists_of" do
     before(:each) do 
-      packages.clear
+      Packages.clear
     end
 
     it "should be installed if all packages are installed" do 
       foo = mock(:foo)
       bar = mock(:bar)
-      packages[:foo] = foo
-      packages[:bar] = bar
+      Packages.register(:foo,foo)
+      Packages.register(:bar,bar)
       meta_package(:baz) {
         consists_of :foo, :bar
       }
       foo.stub!(:installed?).and_return(true)
       bar.stub!(:installed?).and_return(true)
-      packages[:baz].installed?.should be_true
+      Packages.installed?(:baz).should be_true
     end
 
     it "should not be installed if any package isn't installed" do
       foo = mock(:foo)
       bar = mock(:bar)
-      packages[:foo] = foo
-      packages[:bar] = bar
+      Packages.register(:foo,foo)
+      Packages.register(:bar,bar)
       meta_package(:baz) { 
         consists_of :foo, :bar
       }
       foo.stub!(:installed?).and_return(true)
       bar.stub!(:installed?).and_return(false)
-      packages[:baz].installed?.should be_false
+      Packages.installed?(:baz).should be_false
     end
 
     it "should install all packages" do
       foo = mock(:foo)
       bar = mock(:bar)
-      packages[:foo] = foo
-      packages[:bar] = bar
+      Packages.register(:foo,foo)
+      Packages.register(:bar,bar)
       meta_package(:baz) {
         consists_of :foo, :bar
       }
@@ -206,14 +203,14 @@ describe "meta_package method" do
       bar.stub!(:installed?).and_return(false)
       foo.should_receive(:install)
       bar.should_receive(:install)
-      packages[:baz].install
+      Packages.install(:baz)
     end
 
     it "should remove all packages" do
       foo = mock(:foo)
       bar = mock(:bar)
-      packages[:foo] = foo
-      packages[:bar] = bar
+      Packages.register(:foo,foo)
+      Packages.register(:bar,bar)
       meta_package(:baz) {
         consists_of :foo, :bar
       }
@@ -221,7 +218,7 @@ describe "meta_package method" do
       bar.stub!(:installed?).and_return(true)
       foo.should_receive(:remove)
       bar.should_receive(:remove)
-      packages[:baz].remove
+      Packages.remove(:baz)
     end
   end
 end

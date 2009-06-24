@@ -20,25 +20,54 @@ def some(collection, predicate)
   return false
 end
 
-class PackageDirectory < Hash
-  def register(package)
-    self[package.name] = package
-  end
-
-  def unregister(package)
-    if package.class == Symbol
-      self[package] = nil
-    else
-      self[package.name] = nil
+class AbstractPackages
+  def self.lookup_and_forward(*methods)
+    if methods.count == 1 and methods.first.class == Array
+      methods = methods.first
+    end
+      
+    for method in methods
+      self.class_eval("""
+def self.#{method}(name)
+  Packages.lookup(name).#{method}
+end
+""")
     end
   end
 end
 
-class Defaults
-  @@package_directory = PackageDirectory.new
+class Packages < AbstractPackages
+  @@registered_packages = {}
+  lookup_and_forward :install, :remove, :installed?
+  lookup_and_forward :run_install_hooks, :run_remove_hooks
   
-  def self.package_directory 
-    @@package_directory
+  class << self 
+    def register(*args)
+      if args.count == 1
+        package = args[0]
+        @@registered_packages[package.name] = package
+      else 
+        name = args[0]
+        package = args[1]
+        @@registered_packages[name] = package
+      end
+    end
+    
+    def unregister(package)
+      @@registered_packages[package.name] = nil
+    end
+    
+    def lookup(name)
+      @@registered_packages[name]
+    end
+    
+    def clear 
+      @@registered_packages.clear
+    end
+    
+    def count
+      @@registered_packages.count
+    end
   end
 end
 
@@ -47,9 +76,8 @@ class Package
   attr_accessor :name, :before_install_hooks, :after_install_hooks
   attr_accessor :before_remove_hooks, :after_remove_hooks
 
-  def initialize(name, directory = Defaults.package_directory, dependency_names = [])
+  def initialize(name, dependency_names = [])
     @name = name
-    @directory = directory
     @dependency_names = dependency_names
 
     @install_callback = $do_nothing
@@ -131,35 +159,21 @@ class Package
   end
 
   def register
-    @directory.register(self)
+    Packages.register(self)
   end
 
   def unregister
-    @directory.unregister(self)
+    Packages.unregister(self)
   end
 
   def dependencies
-    @dependency_names.map {|name| @directory[name]}
+    @dependency_names.map {|name| Packages.lookup(name)}
   end
 end  
 
-class Packages 
-  def self.packages
-    Defaults.package_directory
-  end
-
-  def self.install(name)
-    packages[name].install
-  end
-
-  def self.remove(name)
-    packages[name].remove
-  end
-end
-
 class AptitudePackage < Package
-  def initialize(name, aptitude_name, directory=Defaults.package_directory)
-    super(name, directory, [])
+  def initialize(name, aptitude_name)
+    super(name, [])
     @aptitude_name = aptitude_name
     @install_callback = lambda {
       system("aptitude -y install #@aptitude_name")
@@ -226,7 +240,6 @@ class MetaPackageBuilder
   
   def initialize(name)
     @package = Package.new(name)
-    @directory = Defaults.package_directory
     @package.register
   end
 
@@ -264,7 +277,7 @@ class MetaPackageBuilder
 
   private 
   def lookup_packages(package_names)
-    package_names.map {|name| @directory[name]}
+    package_names.map {|name| Packages.lookup(name)}
   end
 end
 
