@@ -9,8 +9,8 @@ package(:django) {
 
   install {
     shell_out("svn co http://code.djangoproject.com/svn/django/trunk/ django-trunk")
-    ln_sf "#{`pwd`.chomp}/django-trunk/django #{python_site_packages}/django"
-    ln_sf "#{`pwd`.chomp}/django-trunk/django/bin/django-admin.py /usr/local/bin"
+    ln_sf "#{`pwd`.chomp}/django-trunk/django", "#{python_site_packages}/django"
+    ln_sf "#{`pwd`.chomp}/django-trunk/django/bin/django-admin.py", "/usr/local/bin"
   }
 
   remove {
