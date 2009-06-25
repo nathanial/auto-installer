@@ -6,5 +6,6 @@ then
     exit 1
 fi
 
+mkdir -p downloads
 aptitude -y install ruby rubygems irb
 gem install httpclient

@@ -10,7 +10,7 @@ then
 fi
 
 if [ -z $AUTO_INSTALLER_HOME/downloads ]; then
-    touch $AUTO_INSTALLER_HOME/downloads
+    mkdir $AUTO_INSTALLER_HOME/downloads
 fi
 if [ -z $AUTO_INSTALLER_HOME/support ]; then 
     touch $AUTO_INSTALLER_HOME/support
