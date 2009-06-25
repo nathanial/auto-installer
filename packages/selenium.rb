@@ -2,7 +2,6 @@ require 'package'
 require 'packages/general'
 require 'rubygems'
 require 'httpclient'
-require 'parseconfig'
 require 'fileutils'
 include FileUtils
 
