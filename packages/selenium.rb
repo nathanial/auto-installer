@@ -15,9 +15,9 @@ package(:selenium) {
       file.write(client.get_content(selenium_url))
     end
     shell_out("unzip #@downloads/selenium-remote-control.zip -d #@downloads/selenium")
-    mv '#@downloads/selenium', '/var/selenium'
+    mv "#@downloads/selenium", '/var/selenium'
     ln_s '/var/selenium/selenium-remote-control-1.0.1', '/var/selenium/remote-control'
-    cp '#@support/start-selenium', '/usr/bin/'
+    cp "#@support/start-selenium", '/usr/bin/'
     chmod 0005, '/usr/bin/start-selenium'
   }
 
