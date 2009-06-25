@@ -3,7 +3,6 @@ require 'packages/general'
 require 'open-uri'
 require 'rubygems'
 require 'httpclient'
-require 'parseconfig'
 require 'fileutils'
 include FileUtils
 

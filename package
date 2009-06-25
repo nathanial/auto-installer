@@ -9,11 +9,6 @@ then
     exit 1
 fi
 
-if [ -z $(which ruby) ]
-then
-    aptitude -y install ruby
-fi
-
 if [ -z $AUTO_INSTALLER_HOME/downloads ]; then
     touch $AUTO_INSTALLER_HOME/downloads
 fi
@@ -21,26 +16,4 @@ if [ -z $AUTO_INSTALLER_HOME/support ]; then
     touch $AUTO_INSTALLER_HOME/support
 fi
 
-case "$1" in 
-    "install")
-	ruby -e "
-\$LOAD_PATH << ENV['AUTO_INSTALLER_HOME']
-require 'package'
-require 'packages/$2'
-Packages.install(:$2)
-"
-	;;
-
-    "remove")
-	ruby -e "
-\$LOAD_PATH << ENV['AUTO_INSTALLER_HOME']
-require 'package'
-require 'packages/$2'
-Packages.remove(:$2)
-"
-	;;
-    *)
-	echo "option $1 not recognized"
-	echo "usage: package install|remove|installed? <item>"
-	;;
-esac
+ruby $AUTO_INSTALLER_HOME/autoinstall.rb $@

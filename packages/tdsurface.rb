@@ -30,6 +30,7 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
   }
 
   remove {
+    puts "removing tdsurface"
     shell_out("service apache2 stop")
     rm_rf '/var/django-projects'
     rm_rf '/var/matplotlib'
