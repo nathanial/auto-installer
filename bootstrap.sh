@@ -9,3 +9,5 @@ fi
 mkdir -p downloads
 aptitude -y install ruby rubygems irb
 gem install httpclient
+gem install openssl-nonblock
+ln -s $(pwd)/package /usr/local/bin/package
