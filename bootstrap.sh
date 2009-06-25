@@ -7,7 +7,7 @@ then
 fi
 
 mkdir -p downloads
-aptitude -y install ruby rubygems irb
+aptitude -y install ruby rubygems irb libopenssl-ruby
 gem install httpclient
 gem install openssl-nonblock
 ln -s $(pwd)/package /usr/local/bin/package
