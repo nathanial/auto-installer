@@ -19,7 +19,7 @@ package(:my_emacs) {
   }
 }
 
-package :my_keybindings {
+package(:my_keybindings) {
   install {
     cp "#@support/xmodmap", "~/.xmodmap"
     shell_out('xmodmap ~/.xmodmap')
@@ -32,6 +32,6 @@ package :my_keybindings {
   }
 }
 
-meta_package :my_environment {
+meta_package(:my_environment) {
   consists_of :my_emacs, :my_keybindings
 }
