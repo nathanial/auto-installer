@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+$LOAD_PATH << ENV['AUTO_INSTALLER_HOME']
 require 'package'
 require 'packages/general'
 require "packages/#{ARGV[1]}"
