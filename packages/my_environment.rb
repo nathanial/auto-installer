@@ -21,14 +21,14 @@ package(:my_emacs) {
 
 package(:my_keybindings) {
   install {
-    cp "#@support/xmodmap", "~/.xmodmap"
-    shell_out('xmodmap ~/.xmodmap')
+    cp "#@support/xmodmap", "#{ENV['HOME']}/.xmodmap"
+    shell_out('xmodmap #{ENV['HOME']}/.xmodmap')
   }    
   remove {
-    rm '~/.xmodmap'
+    rm_f '#{ENV['HOME']}/.xmodmap'
   }
   installed? {
-    File.exists? "~/.xmodmap"
+    File.exists? "#{ENV['HOME']}/.xmodmap"
   }
 }
 
