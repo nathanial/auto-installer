@@ -19,7 +19,7 @@ package(:activemq) {
     mv "#@home/apache-activemq-5.2.0", '/opt/apache-activemq-5.2.0'
     ln_s '/opt/apache-activemq-5.2.0', '/opt/active-mq'
     ln_s '/opt/apache-activemq-5.2.0/bin/linux-x86-32', '/opt/apache-activemq-5.2.0/bin/linux'
-    cp "#@home/support/activemq", '/etc/init.d/'
+    cp "#@support/activemq/activemq", '/etc/init.d/'
     chmod 0005, '/etc/init.d/activemq'
     shell_out("update-rc.d activemq defaults")
     

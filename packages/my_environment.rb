@@ -24,7 +24,7 @@ package(:my_emacs) {
 
 package(:my_keybindings) {
   install {
-    cp "#@support/xmodmap", "#{ENV['HOME']}/.xmodmap"
+    cp "#@support/my_environment/xmodmap", "#{ENV['HOME']}/.xmodmap"
     shell_out("xmodmap #{ENV['HOME']}/.xmodmap")
   }    
   remove {

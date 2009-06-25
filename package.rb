@@ -236,6 +236,10 @@ class PackageBuilder
   def after_remove(&block)
     @package.add_remove_hook :after, block
   end
+
+  def define(name, &block)
+    (class << self; self; end).send :define_method, name, &block
+  end
 end
 
 class MetaPackageBuilder

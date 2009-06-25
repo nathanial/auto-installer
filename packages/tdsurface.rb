@@ -13,7 +13,7 @@ package(:tdsurface) {
   install {
     mkdir_p(['/var/django-projects', '/var/matplotlib', '/var/log/tdsurface'])
     shell_out("git clone git@github.com:teledrill/tdsurface.git /var/django-projects/tdsurface")
-    cp "#@support/django_local_settings.py", "/var/django-projects/tdsurface/settings_local.py"
+    cp "#@support/tdsurface/django_local_settings.py", "/var/django-projects/tdsurface/settings_local.py"
     chown("root", "www-data", ["/var/log/tdsurface"])
     cp_r "#{python_site_packages}/django/contrib/admin/media", "/var/www/media"
     cp_r "/var/django-projects/tdsurface/media","/var/www/"
@@ -24,7 +24,7 @@ CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY 'mosfet';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
     shell_out("python /var/django-projects/tdsurface/manage.py syncdb")
-    cp "#@support/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
+    cp "#@support/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
     chmod_R(0777, ["/var/matplotlib", "/var/log/tdsurface"])
     shell_out("service apache2 restart")
   }
