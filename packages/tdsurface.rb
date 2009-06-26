@@ -5,7 +5,7 @@ require 'fileutils'
 include FileUtils
 
 package(:tdsurface) {
-  depends_on [:mysql_server, :apache2, :svn, :git, :django,
+  depends_on [:mysql_server, :apache2, :svn, :git, :django, :expect,
               :python_tz, :matplotlib, :mod_python, :python_mysqldb]
 
   python_site_packages = `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
@@ -23,7 +23,7 @@ CREATE DATABASE tdsurface;
 CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY 'mosfet';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
-    shell_out("python /var/django-projects/tdsurface/manage.py syncdb")
+    shell_out("expect #@support/tdsurface/expect_script.tcl")
     cp "#@support/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
     chmod_R(0777, ["/var/matplotlib", "/var/log/tdsurface"])
     shell_out("service apache2 restart")
@@ -37,7 +37,7 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
     rm_rf '/var/log/tdsurface'
     rm_rf '/var/www/media'
     shell_out("""
-    mysql --user=root --password=mosfet -e \"
+    mysql --user=root --password=scimitar1 -e \"
        DROP DATABASE tdsurface;
        DROP USER 'tdsurface'@'localhost';\"
 """)

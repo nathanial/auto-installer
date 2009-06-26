@@ -17,6 +17,7 @@ package(:hudson) {
     install_hudson_war
     install_git_plugin
     install_hudson_service
+    sleep(10)
   }
 
   remove {

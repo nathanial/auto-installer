@@ -242,12 +242,11 @@ class PackageBuilder
   end
 end
 
-class MetaPackageBuilder
+class MetaPackageBuilder < PackageBuilder
   attr_accessor :package
   
   def initialize(name)
-    @package = Package.new(name)
-    @package.register
+    super(name)
   end
 
   def is_one_of(*package_names)

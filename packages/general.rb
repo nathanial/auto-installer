@@ -1,11 +1,16 @@
 require 'package'
 
 aptitude_packages({
+  :ant => 'ant',
+  :ruby => 'ruby',
+  :rubygems => 'rubygems',
+  :irb => 'irb',
+  :libopenssl_ruby => 'libopenssl-ruby',
+  :curl => 'curl',
   :git => 'git-core',
   :svn => 'subversion',
   :ruby => 'ruby1.8',
   :java => 'sun-java6-jdk',
-  :mysql_server => 'mysql-server',
   :python25 => 'python2.5',
   :python26 => 'python2.6',
   :matplotlib => 'python-matplotlib',
@@ -13,8 +18,39 @@ aptitude_packages({
   :emacs => 'emacs-snapshot-gtk',
   :apache2 => 'apache2',
   :mod_python => 'libapache2-mod-python',
-  :python_mysqldb => 'python-mysqldb'
+  :python_mysqldb => 'python-mysqldb',
+  :expect => 'expect'
 })
+
+package(:mysql_server) {
+  depends_on :expect
+  install {
+    shell_out("expect #@support/mysql_server/expect_script.tcl") 
+  }
+  remove {
+    shell_out("aptitude -y remove mysql-server")    
+  }
+  installed? {
+    search_results = `aptitude search #@aptitude_name`
+    installed = search_results.reject {|r| not r =~ /^i/}
+    not installed.empty?
+  }
+}
+
+
+package(:http_client_gem){
+  depends_on :ruby, :rubygems
+  install { shell_out("gem install httpclient") }
+  remove { shell_out("gem remove httpclient") }
+  installed? { shell_out("ruby -e \"require httpclient\"") }
+}
+
+package(:openssl_nonblock_gem){
+  depends_on :ruby, :rubygems
+  install { shell_out("gem install openssl-nonblock") }
+  remove { shell_out("gem remove openssl-nonblock") }
+  installed? { shell_out("ruby -e \"require httpclient\"") }
+}
 
 meta_package(:python) {
   is_one_of :python25, :python26
