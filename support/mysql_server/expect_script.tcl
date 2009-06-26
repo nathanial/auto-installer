@@ -1,5 +1,5 @@
 spawn aptitude -y install mysql-server
-expect "user:"
+expect "user:$"
 send "scimitar1"
-expect "user:"
+expect "user:$"
 send "scimitar1"
