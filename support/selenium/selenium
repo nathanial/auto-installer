@@ -1,0 +1,46 @@
+#!/bin/sh
+
+if [ "$(whoami)" != "root" ]; then
+    echo "must be sudo to run this script"
+    exit 1
+fi
+
+DESC="Selenium Server"
+NAME=selenium
+PIDFILE=/var/run/$NAME.pid
+COMMAND=/opt/selenium/run-selenium
+
+do_start() {
+    start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --exec $COMMAND
+}
+
+do_stop() {
+    start-stop-daemon --stop --pidfile $PIDFILE
+    if [ -e $PIDFILE ]
+    then rm $PIDFILE
+    fi
+}
+
+case $1 in
+    start)
+	echo -n "Starting $DESC: $NAME"
+	do_start
+	echo "."
+	;;
+    stop)
+	echo -n "Stopping $DESC : $NAME"
+	do_stop
+	echo "."
+	;;
+    restart)
+	echo -n "Restarting $DESC : $NAME"
+	do_stop
+	sleep 1
+	do_start
+	echo "."
+	;;
+    *)
+	echo "usage: $NAME {start|stop|restart}"
+	exit 1
+	;;
+esac

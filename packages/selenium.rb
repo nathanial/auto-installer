@@ -15,18 +15,26 @@ package(:selenium) {
       file.write(client.get_content(selenium_url))
     end
     shell_out("unzip #@downloads/selenium-remote-control.zip -d #@downloads/selenium")
-    mv "#@downloads/selenium", '/var/selenium'
-    ln_s '/var/selenium/selenium-remote-control-1.0.1', '/var/selenium/remote-control'
-    cp "#@support/selenium/start-selenium", '/usr/bin/'
-    chmod 0005, '/usr/bin/start-selenium'
+
+    mkdir "/opt/selenium"
+    mv "#@downloads/selenium/selenium-remote-control-1.0.1/selenium-server-1.0.1/selenium-server.jar", '/opt/selenium'
+    cp "#@support/selenium/run-selenium", "/opt/selenium/"
+    cp "#@support/selenium/selenium", "/etc/init.d/"
+    
+    shell_out("update-rc.d selenium defaults")
+    chmod 0005, '/opt/selenium/run-selenium'
+    chmod 0005, '/etc/init.d/selenium'
   }
 
   remove {
-    rm_rf '/var/selenium'
-    rm_f '/usr/bin/start-selenium'
+    system("service selenium stop")
+    system("update-rc.d -f selenium remove")
+    rm_rf "/opt/selenium"
+    rm_f '/etc/init.d/selenium'
+    rm_rf "#@downloads/selenium"
   }
 
   installed? {
-    File.exists? '/var/selenium' and File.exists? '/usr/bin/start-selenium'
+    File.exists? '/opt/selenium' 
   }
 }

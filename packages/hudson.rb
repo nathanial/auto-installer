@@ -1,12 +1,13 @@
 require 'package'
 require 'packages/general'
+require 'packages/selenium'
 require 'rubygems'
 require 'httpclient'
 require 'fileutils'
 include FileUtils
 
 package(:hudson) {
-  depends_on :java
+  depends_on :java, :selenium
   hudson_war_url = "http://hudson-ci.org/latest/hudson.war"
   hudson_cli_url = "http://localhost:8080/jnlpJars/hudson-cli.jar"
   git_plugin_url = "https://hudson.dev.java.net/files/documents/2402/119838/git.hpi"
