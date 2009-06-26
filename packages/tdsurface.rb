@@ -20,7 +20,7 @@ package(:tdsurface) {
     shell_out("usermod -a -G dialout www-data")
     shell_out("""mysql --user=root --password=scimitar1 -e \"
 CREATE DATABASE tdsurface;
-CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY 'mosfet';
+CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY 'scimitar1';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
     shell_out("expect #@support/tdsurface/expect_script.tcl")
