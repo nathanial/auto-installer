@@ -2,6 +2,7 @@ require 'package'
 require 'packages/general'
 require 'packages/hudson'
 require 'packages/tdsurface'
+require 'packages/auto_installer'
 
 meta_package(:build_server) {
   depends_on :curl
