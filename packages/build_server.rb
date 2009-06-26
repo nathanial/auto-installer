@@ -4,10 +4,10 @@ require 'packages/hudson'
 require 'packages/tdsurface'
 require 'packages/auto_installer'
 
-meta_package(:build_server) {
-  consists_of :hudson, :tdsurface
-  after_install {
-    shell_out("aptitude -y install curl")
+package(:build_server) {
+  depends_on :hudson, :tdsurface, :curl
+  
+  install {
     retry_count = 10
     tries = 0
     finished = false
