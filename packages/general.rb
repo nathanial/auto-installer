@@ -22,22 +22,6 @@ aptitude_packages({
   :expect => 'expect'
 })
 
-package(:mysql_server) {
-  depends_on :expect
-  install {
-    shell_out("expect #@support/mysql_server/expect_script.tcl") 
-  }
-  remove {
-    shell_out("aptitude -y remove mysql-server")    
-  }
-  installed? {
-    search_results = `aptitude search #@aptitude_name`
-    installed = search_results.reject {|r| not r =~ /^i/}
-    not installed.empty?
-  }
-}
-
-
 package(:http_client_gem){
   depends_on :ruby, :rubygems
   install { shell_out("gem install httpclient") }
