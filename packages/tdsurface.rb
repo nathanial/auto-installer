@@ -18,7 +18,7 @@ package(:tdsurface) {
     cp_r "#{python_site_packages}/django/contrib/admin/media", "/var/www/media"
     cp_r "/var/django-projects/tdsurface/media","/var/www/"
     shell_out("usermod -a -G dialout www-data")
-    shell_out("""mysql --user=root --password=mosfet -e \"
+    shell_out("""mysql --user=root --password=scimitar1 -e \"
 CREATE DATABASE tdsurface;
 CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY 'mosfet';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
