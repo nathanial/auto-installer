@@ -6,6 +6,7 @@ aptitude_packages({
   :rubygems => 'rubygems',
   :irb => 'irb',
   :libopenssl_ruby => 'libopenssl-ruby',
+  :mysql_server => 'mysql-server',
   :curl => 'curl',
   :git => 'git-core',
   :svn => 'subversion',
