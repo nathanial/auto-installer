@@ -39,8 +39,14 @@ package(:openssl_nonblock_gem){
 
 package(:rspec_gem){
   depends_on :ruby, :rubygems
-  install { shell_out("gem install rspec --no-rdoc") }
-  remove { shell_out("gem uninstall rspec") }
+  install { 
+    shell_out("gem install rspec --no-rdoc") 
+    shell_out("aptitude -y install librspec-ruby1.8")
+  }
+  remove { 
+    shell_out("gem uninstall rspec") 
+    shell_out("aptitude -y remove librspec-ruby1.8")
+  }
   installed? { `which spec`.strip != '' }
 }
 
