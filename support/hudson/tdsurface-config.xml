@@ -5,7 +5,7 @@
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.plugins.git.GitSCM">
-    <source>git://github.com/nathanial/auto-installer.git</source>
+    <source>git@github.com:teledrill/tdsurface.git</source>
     <repositories/>
     <doMerge>false</doMerge>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
@@ -21,7 +21,11 @@
   </triggers>
   <builders>
     <hudson.tasks.Shell>
-      <command>spec package_spec.rb</command>
+      <command>package remove tdsurface
+package install tdsurface
+start-selenium &amp;
+sleep 5
+python tests/testall.py</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>
