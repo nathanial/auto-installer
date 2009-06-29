@@ -12,7 +12,7 @@ DISPLAY=:0.0
 do_start() {
     touch /var/log/selenium
     chmod a+rw /var/log/selenium
-    java -jar /opt/selenium/selenium-server.jar > /var/log/selenium &
+    java -jar /opt/selenium/selenium-server.jar -firefoxProfileTemplate /opt/selenium/profile/ &
     echo -n $! | cat > /var/run/selenium.pid
 }
 

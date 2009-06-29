@@ -17,6 +17,8 @@ package(:selenium) {
     shell_out("unzip #@downloads/selenium-remote-control.zip -d #@downloads/selenium")
 
     mkdir "/opt/selenium"
+    mkdir "/opt/selenium/profile"
+
     mv "#@downloads/selenium/selenium-remote-control-1.0.1/selenium-server-1.0.1/selenium-server.jar", '/opt/selenium'
     cp "#@support/selenium/selenium", "/etc/init.d/"
     
