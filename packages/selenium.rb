@@ -18,11 +18,9 @@ package(:selenium) {
 
     mkdir "/opt/selenium"
     mv "#@downloads/selenium/selenium-remote-control-1.0.1/selenium-server-1.0.1/selenium-server.jar", '/opt/selenium'
-    cp "#@support/selenium/run-selenium", "/opt/selenium/"
     cp "#@support/selenium/selenium", "/etc/init.d/"
     
     shell_out("update-rc.d selenium defaults")
-    chmod 0005, '/opt/selenium/run-selenium'
     chmod 0005, '/etc/init.d/selenium'
   }
 

@@ -7,18 +7,19 @@ fi
 
 DESC="Selenium Server"
 NAME=selenium
-PIDFILE=/var/run/$NAME.pid
-COMMAND=/opt/selenium/run-selenium
+DISPLAY=:0.0
 
 do_start() {
-    start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --exec $COMMAND
+    touch /var/log/selenium
+    chmod a+rw /var/log/selenium
+    java -jar /opt/selenium/selenium-server.jar > /var/log/selenium &
+    echo -n $! | cat > /var/run/selenium.pid
 }
 
 do_stop() {
-    start-stop-daemon --stop --pidfile $PIDFILE
-    if [ -e $PIDFILE ]
-    then rm $PIDFILE
-    fi
+    echo "STOPPING SELENIUM SERVER"
+    kill $(cat /var/run/selenium.pid)
+    rm /var/run/selenium.pid
 }
 
 case $1 in
