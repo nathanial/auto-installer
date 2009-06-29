@@ -34,9 +34,18 @@ package(:openssl_nonblock_gem){
   depends_on :ruby, :rubygems
   install { shell_out("gem install openssl-nonblock") }
   remove { shell_out("gem remove openssl-nonblock") }
-  installed? { shell_out("ruby -e \"require httpclient\"") }
+  installed? { shell_out("ruby -e \"require 'httpclient'\"") }
+}
+
+package(:rspec_gem){
+  depends_on :ruby, :rubygems
+  install { shell_out("gem install rspec --no-rdoc") }
+  remove { shell_out("gem remove rspec") }
+  installed? { `which spec`.strip != '' }
 }
 
 meta_package(:python) {
   is_one_of :python25, :python26
 }
+
+

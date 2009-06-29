@@ -5,7 +5,7 @@ require 'packages/tdsurface'
 require 'packages/auto_installer'
 
 package(:build_server) {
-  depends_on :hudson, :tdsurface, :curl
+  depends_on :hudson, :tdsurface, :rspec_gem
   
   install {
     client = HTTPClient.new
