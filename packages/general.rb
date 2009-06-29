@@ -26,21 +26,21 @@ aptitude_packages({
 package(:http_client_gem){
   depends_on :ruby, :rubygems
   install { shell_out("gem install httpclient") }
-  remove { shell_out("gem remove httpclient") }
-  installed? { shell_out("ruby -e \"require httpclient\"") }
+  remove { shell_out("gem uninstall httpclient") }
+  installed? { shell_out("ruby -e \"require 'httpclient'\"") }
 }
 
 package(:openssl_nonblock_gem){
   depends_on :ruby, :rubygems
   install { shell_out("gem install openssl-nonblock") }
-  remove { shell_out("gem remove openssl-nonblock") }
-  installed? { shell_out("ruby -e \"require 'httpclient'\"") }
+  remove { shell_out("gem uninstall openssl-nonblock") }
+  installed? { shell_out("ruby -e \"require 'openssl'\"") }
 }
 
 package(:rspec_gem){
   depends_on :ruby, :rubygems
   install { shell_out("gem install rspec --no-rdoc") }
-  remove { shell_out("gem remove rspec") }
+  remove { shell_out("gem uninstall rspec") }
   installed? { `which spec`.strip != '' }
 }
 
