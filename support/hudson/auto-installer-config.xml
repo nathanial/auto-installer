@@ -5,7 +5,7 @@
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.plugins.git.GitSCM">
-    <source>git://github.com/nathanial/auto-installer.git</source>
+    <source>git@github.com:nathanial/auto-installer.git</source>
     <repositories/>
     <doMerge>false</doMerge>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
