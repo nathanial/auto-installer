@@ -36,14 +36,14 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
     rm_rf '/var/matplotlib'
     rm_rf '/var/log/tdsurface'
     rm_rf '/var/www/media'
-    shell_out("""
+    system("""
     mysql --user=root --password=scimitar1 -e \"
        DROP DATABASE tdsurface;
        DROP USER 'tdsurface'@'localhost';\"
 """)
     rm_f '/etc/apache2/conf.d/tdsurface'
     rm_f '/usr/local/bin/django-admin.py'
-    shell_out("service apache2 start")
+    system("service apache2 start")
   }
 
   installed? {

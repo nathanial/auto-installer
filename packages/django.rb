@@ -15,11 +15,13 @@ package(:django) {
 
   remove {
     rm_rf '#@downloads/django-trunk'
-    rm "#{python_site_packages}/django"
-    rm '/usr/local/bin/django-admin.py'
+    rm_rf "#{python_site_packages}/django"
+    rm_rf '/usr/local/bin/django-admin.py'
   }
 
   installed? {
+    File.exists? '/usr/local/bin/django-admin.py' and 
+    File.exists? "#{python_site_packages}/django" and
     File.exists? '/usr/local/bin/django-admin.py'
   }
 }

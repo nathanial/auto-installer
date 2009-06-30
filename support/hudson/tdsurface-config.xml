@@ -21,9 +21,8 @@
   </triggers>
   <builders>
     <hudson.tasks.Shell>
-      <command>package remove tdsurface
-package install tdsurface
-start-selenium &amp;
+      <command>/usr/local/bin/package remove tdsurface
+/usr/local/bin/package install tdsurface
 sleep 5
 python tests/testall.py</command>
     </hudson.tasks.Shell>

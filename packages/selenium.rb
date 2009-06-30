@@ -9,8 +9,8 @@ package(:selenium) {
   depends_on :java
   selenium_url = "http://release.seleniumhq.org/selenium-remote-control/1.0.1/selenium-remote-control-1.0.1-dist.zip"
 
-  @template_properties[:xauthority] = "/home/nathan/.Xauthority"
-  @template_properties[:home] = "home/nathan"
+  @template_properties[:xauthority] = "/home/em/.Xauthority"
+  @template_properties[:home] = "/em/nathan"
 
   install {
     process_support_files
