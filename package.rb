@@ -1,8 +1,28 @@
 require 'graph'
 require 'erb'
+require 'rexml/document'
 
 $do_nothing = lambda { false }
 
+SETTINGS = {}
+
+def parse_settings 
+  doc = REXML::Document.new(File.new(ENV['AUTO_INSTALLER_HOME'] + "/settings"))
+  settings = doc.elements.first
+  packages = settings.elements
+  result = {}
+  for p in packages
+    properties = {}
+    properties_elements = p.elements
+    for e in properties_elements
+      properties[e.attributes['name'].intern] = e.attributes['value']
+    end
+    SETTINGS[p.name.intern] = properties
+  end
+end
+
+parse_settings
+ 
 def shell_out(text)
   raise "shell error with #{text}" unless system(text)
 end
@@ -197,7 +217,6 @@ class PackageBuilder
     @home = ENV['AUTO_INSTALLER_HOME']
     @support = "#@home/support"
     @downloads = "#@home/downloads"
-    @template_properties = {}
     @package = Package.new(name)
     @package.register
   end
@@ -207,7 +226,7 @@ class PackageBuilder
       if File.file? file and /(\.*)(.erb$)/ =~ file
         fname = file.scan(/(.*)(.erb$)/)[0][0]
         File.open(fname, "w") do |f|
-          f.write(ERB.new(File.read(file)).result(binding))
+          f.write(ERB.new(File.read(file)).result)
         end
       end
     end

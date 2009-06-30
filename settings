@@ -1,0 +1,6 @@
+<settings>
+  <selenium>
+    <property name="xauthority" value="/home/nathan/.Xauthority" />
+    <property name="home" value="/home/nathan" />
+  </selenium>
+</settings>
