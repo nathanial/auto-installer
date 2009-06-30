@@ -26,7 +26,6 @@ CREATE DATABASE tdsurface;
 CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY '#{password}';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
-    shell_out("python /var/django-projects/tdsurface/manage.py syncdb")
     shell_out("expect #@support/tdsurface/expect_script.tcl")
     cp "#@support/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
     chmod_R(0777, ["/var/matplotlib", "/var/log/tdsurface"])
