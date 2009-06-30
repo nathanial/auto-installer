@@ -1,4 +1,5 @@
 require 'graph'
+require 'erb'
 
 $do_nothing = lambda { false }
 
@@ -191,13 +192,25 @@ end
 		
 class PackageBuilder
   attr_accessor :package
-
   def initialize(name)
+    @name = name
     @home = ENV['AUTO_INSTALLER_HOME']
     @support = "#@home/support"
     @downloads = "#@home/downloads"
+    @template_properties = {}
     @package = Package.new(name)
     @package.register
+  end
+
+  def process_support_files
+    Dir.glob("#@support/#{@name.to_s}/*").each do |file|
+      if File.file? file and /(\.*)(.erb$)/ =~ file
+        fname = file.scan(/(.*)(.erb$)/)[0][0]
+        File.open(fname, "w") do |f|
+          f.write(ERB.new(File.read(file)).result(binding))
+        end
+      end
+    end
   end
   
   def install(&block)

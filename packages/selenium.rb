@@ -9,7 +9,11 @@ package(:selenium) {
   depends_on :java
   selenium_url = "http://release.seleniumhq.org/selenium-remote-control/1.0.1/selenium-remote-control-1.0.1-dist.zip"
 
+  @template_properties[:xauthority] = "/home/nathan/.Xauthority"
+  @template_properties[:home] = "home/nathan"
+
   install {
+    process_support_files
     client = HTTPClient.new
     open("#@downloads/selenium-remote-control.zip", "wb") do |file|
       file.write(client.get_content(selenium_url))
@@ -24,6 +28,7 @@ package(:selenium) {
     
     shell_out("update-rc.d selenium defaults")
     chmod 0005, '/etc/init.d/selenium'
+    shell_out("service selenium start")
   }
 
   remove {
