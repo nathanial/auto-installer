@@ -1,13 +1,10 @@
 #!/bin/sh
 
-if [ "$(whoami)" != "root" ]; then
-    echo "must be sudo to run this script"
-    exit 1
-fi
-
 DESC="Selenium Server"
 NAME=selenium
-DISPLAY=:0.0
+export DISPLAY=:0.0
+export XAUTHORITY=/home/nathan/.Xauthority
+export HOME=/home/nathan
 
 do_start() {
     touch /var/log/selenium
