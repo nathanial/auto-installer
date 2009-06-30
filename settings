@@ -3,4 +3,7 @@
     <property name="xauthority" value="/home/nathan/.Xauthority" />
     <property name="home" value="/home/nathan" />
   </selenium>
+  <tdsurface>
+    <property name="password" value="scimitar1"/>
+  </tdsurface>
 </settings>
