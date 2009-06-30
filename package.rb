@@ -7,22 +7,24 @@ $do_nothing = lambda { false }
 SETTINGS = {}
 
 def parse_settings 
-  doc = REXML::Document.new(File.new(ENV['AUTO_INSTALLER_HOME'] + "/settings"))
-  settings = doc.elements.first
-  packages = settings.elements
-  result = {}
-  for p in packages
-    properties = {}
-    properties_elements = p.elements
-    for e in properties_elements
-      properties[e.attributes['name'].intern] = e.attributes['value']
+  if not ENV['AUTO_INSTALLER_HOME'].nil? 
+    doc = REXML::Document.new(File.new(ENV['AUTO_INSTALLER_HOME'] + "/settings"))
+    settings = doc.elements.first
+    packages = settings.elements
+    result = {}
+    for p in packages
+      properties = {}
+      properties_elements = p.elements
+      for e in properties_elements
+        properties[e.attributes['name'].intern] = e.attributes['value']
+      end
+      SETTINGS[p.name.intern] = properties
     end
-    SETTINGS[p.name.intern] = properties
   end
 end
 
 parse_settings
- 
+
 def shell_out(text)
   raise "shell error with #{text}" unless system(text)
 end
@@ -46,7 +48,7 @@ class AbstractPackages
     if methods.count == 1 and methods.first.class == Array
       methods = methods.first
     end
-      
+    
     for method in methods
       self.class_eval("""
 def self.#{method}(name)
@@ -139,9 +141,9 @@ class Package
 
   def add_install_hook(where, callback)
     case where
-      when :before then @before_install_hooks << callback
-      when :after then @after_install_hooks << callback
-      else raise "where must be :before or :after"
+    when :before then @before_install_hooks << callback
+    when :after then @after_install_hooks << callback
+    else raise "where must be :before or :after"
     end
   end
 
@@ -209,7 +211,7 @@ class AptitudePackage < Package
     }
   end
 end
-		
+
 class PackageBuilder
   attr_accessor :package
   def initialize(name)
