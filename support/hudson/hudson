@@ -8,11 +8,10 @@ fi
 DESC="Hudson CI Server"
 NAME=hudson
 PIDFILE=/var/run/$NAME.pid
-COMMAND=/opt/hudson/run-hudson
 export HUDSON_HOME=/opt/hudson
 
 do_start() {
-    start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --exec $COMMAND
+    start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --exec /usr/bin/java -- -jar $HUDSON_HOME/hudson.war
 }
 
 do_stop() {

@@ -39,10 +39,8 @@ package(:hudson) {
   }
   
   define(:install_hudson_service){
-    cp "#@support/hudson/run-hudson", '/opt/hudson/'
     cp "#@support/hudson/hudson", '/etc/init.d/'
     shell_out('update-rc.d hudson defaults')
-    chmod 0005, '/opt/hudson/run-hudson'
     chmod 0005, '/etc/init.d/hudson'
     shell_out("service hudson start")
   }

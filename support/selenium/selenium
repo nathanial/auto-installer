@@ -2,6 +2,7 @@
 
 DESC="Selenium Server"
 NAME=selenium
+PIDFILE=/var/run/$NAME.pid
 export DISPLAY=:0.0
 export XAUTHORITY=/home/nathan/.Xauthority
 export HOME=/home/nathan
@@ -9,14 +10,14 @@ export HOME=/home/nathan
 do_start() {
     touch /var/log/selenium
     chmod a+rw /var/log/selenium
-    java -jar /opt/selenium/selenium-server.jar -firefoxProfileTemplate /opt/selenium/profile/ &
-    echo -n $! | cat > /var/run/selenium.pid
+    start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --exec /usr/bin/java -- -jar /opt/selenium/selenium-server.jar -firefoxProfileTemplate /opt/selenium/profile/
 }
 
 do_stop() {
-    echo "STOPPING SELENIUM SERVER"
-    kill $(cat /var/run/selenium.pid)
-    rm /var/run/selenium.pid
+    start-stop-daemon --stop --pidfile $PIDFILE
+    if [ -e $PIDFILE ]
+    then rm $PIDFILE
+    fi
 }
 
 case $1 in
