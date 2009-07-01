@@ -1,16 +1,9 @@
 spawn python "/var/django-projects/tdsurface/manage.py" "syncdb"
 
-expect "(yes/no)" 
-send "yes"
-
-expect "Username" 
-send "teledrill"
-
-expect "E-mail"
-send "nathan@erdosmiller.com"
-
-expect "Password"
-send "<%= SETTINGS[:tdsurface][:password] %>"
-
-expect "Password"
-send "<%= SETTINGS[:tdsurface][:password] %>"
+expect {
+       "(yes/no)" { send "yes\n" }
+       "Username" { send "teledrill\n" }
+       "E-mail"	  { send "nathan@erdosmiller.com\n" }
+       "Password" { send "<%= SETTINGS[:tdsurface][:password] %>\n" }
+       "Password" { send "<%= SETTINGS[:tdsurface][:password] %>\n" }
+}
