@@ -206,7 +206,9 @@ class AptitudePackage < Package
     }
     @installed_callback = lambda {
       search_results = `aptitude search #@aptitude_name`
-      installed = search_results.reject {|r| not r =~ /^i/}
+      installed = search_results.reject do |r| 
+        (not r =~ /^i/) or (not r =~ / #@aptitude_name /)
+      end
       not installed.empty?
     }
   end

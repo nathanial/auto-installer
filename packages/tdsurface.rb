@@ -53,3 +53,4 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
     File.exists? '/var/django-projects'
   }    
 }
+
