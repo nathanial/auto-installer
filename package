@@ -1,6 +1,6 @@
 #!/bin/sh
 
-AUTO_INSTALLER_HOME="/var/development/auto-installer"
+AUTO_INSTALLER_HOME="/home/nathan/Desktop/auto-installer"
 export AUTO_INSTALLER_HOME
 
 if [ "$(whoami)" != "root" ]
@@ -13,7 +13,7 @@ if [ -z $AUTO_INSTALLER_HOME/downloads ]; then
     mkdir $AUTO_INSTALLER_HOME/downloads
 fi
 if [ -z $AUTO_INSTALLER_HOME/support ]; then 
-    touch $AUTO_INSTALLER_HOME/support
+    mkdir $AUTO_INSTALLER_HOME/support
 fi
 
 ruby $AUTO_INSTALLER_HOME/autoinstall.rb $@
