@@ -339,3 +339,7 @@ def aptitude_packages(hash)
     AptitudePackage.new(name, hash[name]).register
   end
 end
+
+def aptitude_package(name, aptitude_name)
+  AptitudePackage.new(name, aptitude_name).register
+end
