@@ -81,7 +81,11 @@ class Packages < AbstractPackages
     end
     
     def lookup(name)
-      @@registered_packages[name]
+      p = @@registered_packages[name]
+      if not p
+        raise "cannot find package name #{name}"
+      end
+      return p
     end
     
     def clear 
@@ -98,6 +102,7 @@ class Package
   attr_accessor :install_callback, :remove_callback, :installed_callback
   attr_accessor :name, :before_install_hooks, :after_install_hooks
   attr_accessor :before_remove_hooks, :after_remove_hooks
+  attr_reader :dependency_names
 
   def initialize(name, dependency_names = [])
     @name = name
@@ -206,7 +211,7 @@ class AptitudePackage < Package
     }
     @installed_callback = lambda {
       search_results = `aptitude search #@aptitude_name`
-      installed = search_results.reject {|r| not r =~ /^i/}
+      installed = search_results.reject {|r| (not r =~ /^i/) or (not r =~ / #{aptitude_name} /) }
       not installed.empty?
     }
   end
@@ -274,6 +279,17 @@ class PackageBuilder
   def define(name, &block)
     (class << self; self; end).send :define_method, name, &block
   end
+
+  def method_missing(m, *args)
+    block = args[0]
+    me = self
+    func = lambda do
+      me.instance_eval(&block)
+    end
+      
+    (class << @package; self; end).send :define_method, m, &func
+  end
+
 end
 
 class MetaPackageBuilder < PackageBuilder
