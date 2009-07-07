@@ -1,0 +1,6 @@
+<ivy-module version="2.0">
+  <info organisation="com.erdosmiller" module="auto-installer"/>
+  <dependencies>
+    <dependency org="commons-io" name="commons-io" rev="1.4" />
+  </dependencies>
+</ivy-module>

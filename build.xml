@@ -1,0 +1,49 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="auto-installer" default="jar">
+	<property name="build.dir" value="build" />
+	<property name="clojure.src.dir" value="src/clojure" />
+	<property name="lib.dir" value="lib" />
+
+	<target name="resolve">
+		<ivy:retrieve />
+	</target>
+
+	<target name="init" depends="resolve">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${lib.dir}" />
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="build-clojure" depends="clean, init">
+		<echo>copying clojure to build directory</echo>
+		<copy todir="${build.dir}">
+			<fileset dir="${clojure.src.dir}">
+				<include name="**/*.clj" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="jar" depends="build-clojure">
+		<jar destfile="${build.dir}/${ant.project.name}.jar">
+			<fileset dir="${build.dir}" />
+		</jar>
+	</target>
+	
+	<target name="run" depends="jar">
+		<java classname="clojure.main">
+			<classpath>
+				<fileset dir="${lib.dir}">
+					<include name="**/*.jar" />
+				</fileset>
+				<fileset dir="${build.dir}">
+					<include name="**/*.jar" />
+				</fileset>
+			</classpath>
+			<arg value="-e" />
+			<arg value="(use 'test-package)" />
+		</java>
+	</target>
+</project>
+
