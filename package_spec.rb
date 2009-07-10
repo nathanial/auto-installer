@@ -59,22 +59,27 @@ describe "package" do
 
   describe "install" do
     it "should set install_callback" do
-        
-      package(:foo) do
+      package(:installer) do
         def install 
           "I install"
+        end
+        def remove 
+          "nothing"
         end
         def installed?
           false
         end
       end
-      Packages.install(:foo).should eql("I install")
+      Packages.install(:installer).should eql("I install")
     end
   end
 
   describe "remove" do
     it "should set remove_callback" do
-      package(:foo) do
+      package(:remover) do
+        def install 
+          "nothing"
+        end
         def remove 
           "I remove"
         end
@@ -82,7 +87,7 @@ describe "package" do
           true
         end
       end
-      Packages.remove(:foo).should eql("I remove")
+      Packages.remove(:remover).should eql("I remove")
     end
   end
 

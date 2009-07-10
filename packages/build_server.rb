@@ -11,4 +11,12 @@ package(:build_server) do
                 File.open("#@support/hudson/tdsurface-config.xml").read,
                 {'Content-Type' => 'text/xml'})
   end
+  
+  def installed?
+    Packages.installed?(:hudson)
+  end
+
+  def remove 
+    Packages.remove(:hudson)
+  end
 end

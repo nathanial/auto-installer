@@ -1,8 +1,9 @@
 require 'graph'
 require 'erb'
 require 'rexml/document'
-
-$do_nothing = lambda { false }
+require 'rubygems'
+require 'aquarium'
+include Aquarium::Aspects
 
 SETTINGS = {}
 
@@ -83,24 +84,13 @@ class Packages
       package_name = args[0]
       arguments = args[1..args.length]
       package = Packages.lookup(package_name)
-      case method_name
-      when :install
-        if not package.installed?
-          package.dependencies.each { |d| d.install if not d.installed? }
-          return package.install
-        end          
-      when :remove
-        return package.remove(*arguments) if package.installed?
-      else
-        return package.send method_name, *arguments
-      end        
+      package.send method_name, *arguments
     end
   end
 end
 
 class Package
-  attr_accessor :name
-  attr_reader :dependency_names
+  attr_accessor :name, :dependency_names
 
   def initialize(name, dependency_names = [])
     @name = name
@@ -110,16 +100,19 @@ class Package
     @downloads = "#@home/downloads"
   end
 
+  def self.depends_on(*args)
+    Aspect.new :after, :invocations_of => :initialize, :object => self,
+    :restricting_methods_to => :private_methods do |point, obj, *args|
+      args.each {|d| obj.add_dependency d}
+    end
+  end
+
   def add_dependency(dependency)
     @dependency_names << dependency
   end
 
   def dependencies
     @dependency_names.map {|name| Packages.lookup(name)}
-  end
-
-  def depends_on(*args)
-    args.each {|a| add_dependency a}
   end
 
   def process_support_files
@@ -145,6 +138,10 @@ class Package
     "Package #@name"
   end
 
+  def to_str
+    to_s
+  end
+
   def inspect 
     "Package #@name"
   end
@@ -154,19 +151,6 @@ class AptitudePackage < Package
   def initialize(name, aptitude_name)
     super(name, [])
     @aptitude_name = aptitude_name
-    @install_callback = lambda {
-      system("aptitude -y install #@aptitude_name")
-    }   
-    @remove_callback = lambda {
-      system("aptitude -y remove #@aptitude_name")
-    }
-    @installed_callback = lambda {
-      search_results = `aptitude search #@aptitude_name`
-      installed = search_results.reject do |r| 
-        (not r =~ /^i/) or (not r =~ / #@aptitude_name /)
-      end
-      not installed.empty?
-    }
   end
 end
 
@@ -221,27 +205,55 @@ class GemPackage < Package
   end
 end
 
+def advise_install(p)
+  Aspect.new :around, :method => :install, :object => p do |point, x, *args|
+    if not x.installed? 
+      x.dependencies.each {|d| d.install}
+      point.proceed
+    end
+  end
+end  
+
+def advise_remove(p)
+  Aspect.new :around, :method => :remove, :object => p do |point, x, *args|
+    if x.installed?
+      point.proceed
+    end
+  end
+end
+
 def aptitude_packages(hash)
   names = hash.keys
   for name in names
-    AptitudePackage.new(name, hash[name]).register
+    p = AptitudePackage.new(name, hash[name])
+    p.register
   end
 end
 
 def aptitude_package(name, aptitude_name)
-  AptitudePackage.new(name, aptitude_name).register
+  p = AptitudePackage.new(name, aptitude_name)
+  advise_install(p)
+  advise_remove(p)
+  p.register
+  return p
 end
 
 def package(name, &block)
-  p = Package.new(name)
-  p.instance_eval &block
+  klazz = Class.new(Package)
+  klazz.class_eval(&block)
+  p = klazz.new(name)
+  advise_install(p)
+  advise_remove(p)
   p.register
   return p
 end
 
 def gem_package(name, gem_name, &block)
-  p = GemPackage.new(name, gem_name)
-  p.instance_eval &block
+  klazz = Class.new(GemPackage)
+  klazz.class_eval(&block)
+  p = klazz.new(name, gem_name)
+  advise_install(p)
+  advise_remove(p)
   p.register
   return p
 end

@@ -8,10 +8,9 @@ include FileUtils
 
 package(:hudson) do
   depends_on :java, :selenium
-  @hudson_war_url = "http://hudson-ci.org/latest/hudson.war"
-  @hudson_cli_url = "http://localhost:8080/jnlpJars/hudson-cli.jar"
-  @git_plugin_url = "https://hudson.dev.java.net/files/documents/2402/119838/git.hpi"
-
+  @@hudson_war_url = "http://hudson-ci.org/latest/hudson.war"
+  @@hudson_cli_url = "http://localhost:8080/jnlpJars/hudson-cli.jar"
+  @@git_plugin_url = "https://hudson.dev.java.net/files/documents/2402/119838/git.hpi"
   @client = HTTPClient.new
 
   def install 
@@ -53,19 +52,19 @@ package(:hudson) do
 
   def download_hudson_war
     open("#@downloads/hudson.war", "wb") do |file|
-      file.write(client.get_content(@hudson_war_url))
+      file.write(@client.get_content(@@hudson_war_url))
     end
   end
 
   def download_hudson_cli
     open("#@downloads/hudson-cli.jar", "wb") do |file|
-      file.write(client.get_content(@hudson_cli_url))
+      file.write(@client.get_content(@@hudson_cli_url))
     end
   end
 
   def download_git_plugin
     open("#@downloads/git.hpi", "wb") do |file|
-      file.write(client.get_content(@git_plugin_url))
+      file.write(@client.get_content(@@git_plugin_url))
     end
   end
 end

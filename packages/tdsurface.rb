@@ -5,10 +5,10 @@ package(:tdsurface) do
   depends_on :mysql_server, :apache2, :svn, :git, :django, :expect
   depends_on :python_tz, :matplotlib, :mod_python, :python_mysqldb
 
-  @python_site_packages = 
+  @@python_site_packages = 
     `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
 
-  @password = SETTINGS[:tdsurface][:password]
+  @@password = SETTINGS[:tdsurface][:password]
 
   def install
     process_support_files
@@ -16,7 +16,7 @@ package(:tdsurface) do
     shell_out("git clone git@github.com:teledrill/tdsurface.git /var/django-projects/tdsurface")
     cp "#@support/tdsurface/django_local_settings.py", "/var/django-projects/tdsurface/settings_local.py"
     chown("root", "www-data", ["/var/log/tdsurface"])
-    cp_r "#@python_site_packages/django/contrib/admin/media", "/var/www/media"
+    cp_r "#@@python_site_packages/django/contrib/admin/media", "/var/www/media"
     cp_r "/var/django-projects/tdsurface/media","/var/www/"
     shell_out("usermod -a -G dialout www-data")
     create_database
@@ -51,7 +51,7 @@ package(:tdsurface) do
 
   def remove_database
     system("""
-    mysql --user=root --password=#@password -e \"
+    mysql --user=root --password=#@@password -e \"
        DROP DATABASE tdsurface;
        DROP USER 'tdsurface'@'localhost';\"
 """)
@@ -59,9 +59,9 @@ package(:tdsurface) do
   
   def create_database 
     puts "create_database"
-    shell_out("""mysql --user=root --password=#@password -e \"
+    shell_out("""mysql --user=root --password=#@@password -e \"
 CREATE DATABASE tdsurface;
-CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY '#@password';
+CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY '#@@password';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
   end

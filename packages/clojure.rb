@@ -5,10 +5,10 @@ include FileUtils
 
 package(:clojure) do
   depends_on :java, :git, :ant
-  @clojure_repo_url = "git://github.com/richhickey/clojure.git"
+  @@clojure_repo_url = "git://github.com/richhickey/clojure.git"
   
   def install 
-    shell_out("git clone #@clojure_repo_url #@downloads/clojure")
+    shell_out("git clone #@@clojure_repo_url #@downloads/clojure")
     shell_out("ant -f #@downloads/clojure/build.xml clojure")
     mkdir_p "/opt/clojure/"
     mv "#@downloads/clojure/clojure.jar", "/opt/clojure/"

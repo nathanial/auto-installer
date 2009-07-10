@@ -5,13 +5,13 @@ include FileUtils
 
 package(:selenium) do
   depends_on :java
-  @selenium_url = "http://release.seleniumhq.org/selenium-remote-control/1.0.1/selenium-remote-control-1.0.1-dist.zip"
+  @@selenium_url = "http://release.seleniumhq.org/selenium-remote-control/1.0.1/selenium-remote-control-1.0.1-dist.zip"
 
   def install
     process_support_files
     client = HTTPClient.new
     open("#@downloads/selenium-remote-control.zip", "wb") do |file|
-      file.write(client.get_content(@selenium_url))
+      file.write(client.get_content(@@selenium_url))
     end
     shell_out("unzip #@downloads/selenium-remote-control.zip -d #@downloads/selenium")
 
