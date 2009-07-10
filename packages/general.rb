@@ -50,8 +50,9 @@ package(:rspec_gem) do
 end
 
 package(:python) do 
+
   def installed?
-    some([:python25, :python26], lambda {|p| Package.installed? p})
+    some([:python25, :python26], lambda {|p| Packages.installed? p})
   end
 
   def install 

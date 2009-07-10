@@ -6,14 +6,14 @@ require 'httpclient'
 require 'fileutils'
 include FileUtils
 
-package(:activemq) {
+package(:activemq) do
   depends_on :java, :svn
-  apache_activemq_url = "http://mirror-fpt-telecom.fpt.net/apache/activemq/apache-activemq/5.2.0/apache-activemq-5.2.0-bin.tar.gz"
+  @apache_activemq_url = "http://mirror-fpt-telecom.fpt.net/apache/activemq/apache-activemq/5.2.0/apache-activemq-5.2.0-bin.tar.gz"
 
-  install {
+  def install
     client = HTTPClient.new
     open("#@home/downloads/activemq.tar.gz", "wb") do |file|
-      file.write(client.get_content(apache_activemq_url))
+      file.write(client.get_content(@apache_activemq_url))
     end
     shell_out("tar xf #@home/downloads/activemq.tar.gz -C #@home")
     mv "#@home/apache-activemq-5.2.0", '/opt/apache-activemq-5.2.0'
@@ -28,16 +28,16 @@ package(:activemq) {
     wrapper_conf.gsub!(/set\.default\.ACTIVEMQ_HOME=.*$/, 'set.default.ACTIVEMQ_HOME=/opt/active-mq')
     wrapper_conf.gsub!(/set\.default\.ACTIVEMQ_BASE=.*$/, 'set.default.ACTIVEMQ_BASE=/opt/active-mq')
     open(wrapper_conf_path, "w") {|f| f.print(wrapper_conf)}    
-  }
+  end
   
-  remove {
+  def remove
     rm_rf '/opt/active-mq'
     rm_rf '/opt/apache-activemq-5.2.0'
     shell_out("update-rc.d -f activemq remove")
     rm '/etc/init.d/activemq'
-  }
+  end
 
-  installed? {
+  def installed? 
     File.exists?("/opt/apache-activemq-5.2.0")
-  }
-}
+  end
+end

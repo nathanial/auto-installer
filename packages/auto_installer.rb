@@ -1,21 +1,19 @@
-require 'package'
-require 'packages/general'
 
-package(:auto_installer) {
-  depends_on [:git, :ruby, :rubygems, :irb,
-              :libopenssl_ruby, :http_client_gem,
-              :openssl_nonblock_gem]
+package(:auto_installer) do
+  depends_on :git, :ruby, :rubygems, :irb
+  depends_on :libopenssl_ruby, :http_client_gem
+  depends_on :openssl_nonblock_gem
 
-  install {
+  def install 
     ln_s "#@home/package", "/usr/local/bin/package"
-  }
+  end
 
-  remove {
+  def remove 
     rm "/usr/local/bin/package"
-  }
+  end
   
-  installed? {
+  def installed? 
     File.exists? "/usr/local/bin/package"
-  }
-}
+  end
+end
     

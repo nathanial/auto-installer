@@ -12,7 +12,14 @@ target = ARGV[0]
 command = ARGV[1]
 arguments = ARGV[2..ARGV.length].join(',')
 
-eval """
-p = Packages.lookup(:#{target})
-p.#{command}(#{arguments})
+text = nil
+if arguments.length > 0
+  text =  """
+p = Packages.#{command}(:#{target}, *#{arguments})
 """
+else
+  text = """
+p = Packages.#{command}(:#{target})
+"""
+end
+puts eval text

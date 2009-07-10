@@ -3,38 +3,36 @@ require 'packages/general'
 require 'fileutils'
 include FileUtils
 
-package(:my_emacs) {
+package(:my_emacs) do
   depends_on :emacs, :git
-  site_lisp_dir = "/usr/share/emacs/site-lisp"
+  @site_lisp_dir = "/usr/share/emacs/site-lisp"
 
-  install {
+  def install
     shell_out("git clone git://github.com/nathanial/my-site-lisp #@downloads/my-site-lisp")
-    rm_rf "#{site_lisp_dir}"
-    mv "#@downloads/my-site-lisp", "#{site_lisp_dir}"
-  }
+    rm_rf "#@site_lisp_dir"
+    mv "#@downloads/my-site-lisp", "#@site_lisp_dir"
+  end
 
-  remove {
-    rm_rf "#{site_lisp_dir}"
-  }
+  def remove
+    rm_rf "#@site_lisp_dir"
+  end
+  
+  def installed? 
+    File.exists? "#@site_lisp_dir/mode-loader.el"
+  end
+end
 
-  installed? {
-    File.exists? "#{site_lisp_dir}/mode-loader.el"
-  }
-}
-
-package(:my_keybindings) {
-  install {
+package(:my_keybindings) do
+  def install
     cp "#@support/my_environment/xmodmap", "#{ENV['HOME']}/.xmodmap"
     shell_out("xmodmap #{ENV['HOME']}/.xmodmap")
-  }    
-  remove {
-    rm_f "#{ENV['HOME']}/.xmodmap"
-  }
-  installed? {
-    File.exists? "#{ENV['HOME']}/.xmodmap"
-  }
-}
+  end
 
-meta_package(:my_environment) {
-  consists_of :my_emacs, :my_keybindings
-}
+  def remove 
+    rm_f "#{ENV['HOME']}/.xmodmap"
+  end
+
+  def installed? 
+    File.exists? "#{ENV['HOME']}/.xmodmap"
+  end
+end

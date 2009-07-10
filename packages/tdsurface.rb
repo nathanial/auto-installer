@@ -1,30 +1,32 @@
 require 'fileutils'
 include FileUtils
 
-package(:tdsurface){
-  depends_on [:mysql_server, :apache2, :svn, :git, :django, :expect,
-              :python_tz, :matplotlib, :mod_python, :python_mysqldb]
+package(:tdsurface) do
+  depends_on :mysql_server, :apache2, :svn, :git, :django, :expect
+  depends_on :python_tz, :matplotlib, :mod_python, :python_mysqldb
 
-  python_site_packages = `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
+  @python_site_packages = 
+    `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
 
-  password = SETTINGS[:tdsurface][:password]
+  @password = SETTINGS[:tdsurface][:password]
 
-  install {
+  def install
     process_support_files
     mkdir_p(['/var/django-projects', '/var/matplotlib', '/var/log/tdsurface'])
     shell_out("git clone git@github.com:teledrill/tdsurface.git /var/django-projects/tdsurface")
     cp "#@support/tdsurface/django_local_settings.py", "/var/django-projects/tdsurface/settings_local.py"
     chown("root", "www-data", ["/var/log/tdsurface"])
-    cp_r "#{python_site_packages}/django/contrib/admin/media", "/var/www/media"
+    cp_r "#@python_site_packages/django/contrib/admin/media", "/var/www/media"
     cp_r "/var/django-projects/tdsurface/media","/var/www/"
     shell_out("usermod -a -G dialout www-data")
     create_database
+    shell_out("expect #@support/tdsurface/expect_script.tcl")
     cp "#@support/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
     chmod_R(0777, ["/var/matplotlib", "/var/log/tdsurface"])
     shell_out("service apache2 restart")
-  }
+  end
 
-  remove {
+  def remove
     puts "removing tdsurface"
     shell_out("service apache2 stop")
     rm_rf '/var/django-projects'
@@ -35,39 +37,39 @@ package(:tdsurface){
     rm_f '/etc/apache2/conf.d/tdsurface'
     rm_f '/usr/local/bin/django-admin.py'
     system("service apache2 start")
-  }
+  end
 
   
-  installed? {
+  def installed?
     File.exists? '/var/django-projects'
-  }    
+  end
   
-  reinstall lambda {
-    @package.remove
-    @package.install
-  }
+  def reinstall 
+    remove
+    install
+  end
 
-  remove_database lambda {
+  def remove_database
     system("""
-    mysql --user=root --password=#{password} -e \"
+    mysql --user=root --password=#@password -e \"
        DROP DATABASE tdsurface;
        DROP USER 'tdsurface'@'localhost';\"
 """)
-  }
+  end
   
-  create_database lambda {
+  def create_database 
     puts "create_database"
-    shell_out("""mysql --user=root --password=#{password} -e \"
+    shell_out("""mysql --user=root --password=#@password -e \"
 CREATE DATABASE tdsurface;
-CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY '#{password}';
+CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY '#@password';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
-  }
+  end
 
-  repair_database lambda {
-    @package.remove_database
-    @package.create_database
+  def repair_database 
+    remove_database
+    create_database
     shell_out("expect #@support/tdsurface/expect_script.tcl")
-  }
-}
+  end
+end
 

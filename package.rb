@@ -84,15 +84,15 @@ class Packages
       arguments = args[1..args.length]
       package = Packages.lookup(package_name)
       case method_name
-      when 'install' 
+      when :install
         if not package.installed?
-          package.dependencies.each {|d| d.install}
+          package.dependencies.each { |d| d.install if not d.installed? }
           return package.install
         end          
-      when 'remove'
-          return package.remove(*arguments) if package.installed?
+      when :remove
+        return package.remove(*arguments) if package.installed?
       else
-        package.send method_name, *arguments
+        return package.send method_name, *arguments
       end        
     end
   end
@@ -139,6 +139,14 @@ class Package
 
   def unregister
     Packages.unregister(self)
+  end
+
+  def to_s
+    "Package #@name"
+  end
+
+  def inspect 
+    "Package #@name"
   end
 end  
 
