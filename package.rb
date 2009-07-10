@@ -94,25 +94,22 @@ class Package
 
   def initialize(name, dependency_names = [])
     @name = name
-    @dependency_names = dependency_names    
+    @@dependency_names = dependency_names    
     @home = ENV['AUTO_INSTALLER_HOME']
     @support = "#@home/support"
     @downloads = "#@home/downloads"
   end
 
   def self.depends_on(*args)
-    Aspect.new :after, :invocations_of => :initialize, :object => self,
-    :restricting_methods_to => :private_methods do |point, obj, *args|
-      args.each {|d| obj.add_dependency d}
-    end
+    @@dependency_names = args
   end
 
   def add_dependency(dependency)
-    @dependency_names << dependency
+    @@dependency_names << dependency
   end
 
   def dependencies
-    @dependency_names.map {|name| Packages.lookup(name)}
+    @@dependency_names.map {|name| Packages.lookup(name)}
   end
 
   def process_support_files
