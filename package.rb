@@ -176,7 +176,7 @@ class AptitudePackage < Package
   def installed? 
     puts "checking if #@name is installed"
     search_results = `aptitude search #@aptitude_name`
-    installed = search_results.reject {|r| not r =~ /^i/}
+    installed = search_results.reject {|r| not r =~ /^i/ or not r =~ / #@aptitude_name /}
     not installed.empty?
   end
 end
