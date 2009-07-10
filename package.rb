@@ -125,7 +125,11 @@ class Package
   end
 
   def dependencies
-    @dependency_names.map {|name| Packages.lookup(name)}
+    @dependency_names.map {|name|
+      result = Packages.lookup(name)
+      puts "#{name} = #{result}"
+      result
+    }
   end
 
   def process_support_files
@@ -153,7 +157,10 @@ class Package
 end  
 
 class AptitudePackage < Package
+  attr_accessor :name, :aptitude_name
+  
   def initialize(name, aptitude_name)
+    super()
     @name = name
     @aptitude_name = aptitude_name
   end
@@ -178,6 +185,7 @@ class GemPackage < Package
   attr_accessor :name, :gem_name
 
   def initialize(name, gem_name)
+    super()
     @name = name
     @gem_name = gem_name
   end
@@ -199,18 +207,18 @@ def aptitude_packages(hash)
   names = hash.keys
   for name in names
     p = AptitudePackage.new(name, hash[name])
-    Packages.register(p)
+    Packages.register(p.name, p)
   end
 end
 
 def aptitude_package(name, aptitude_name)
   p = AptitudePackage.new(name, aptitude_name)
-  Packages.register(p)
+  Packages.register(p.name, p)
   return p
 end
 
 def gem_package(name, gem_name)
   p = GemPackage.new(name, gem_name)
-  Packages.register(p)
+  Packages.register(p.name, p)
   return p
 end
