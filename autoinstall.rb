@@ -4,6 +4,7 @@ require 'package'
 
 Dir.glob("#{ENV['AUTO_INSTALLER_HOME']}/packages/*").each do |p|
   if p =~ /[.]rb$/
+    puts "loading #{p}"
     eval("require '#{p}'")
   end
 end

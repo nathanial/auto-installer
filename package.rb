@@ -101,10 +101,13 @@ class Package
   end
 
   def self.depends_on(*dependency_names)
+    klazz = self
     Aspect.new :after, :method => :initialize, :type => Package,
     :method_options => :include_descendent_methods, 
     :restricting_methods_to => :private_methods do |point, obj, *args|
-      dependency_names.each {|a| obj.add_dependency(a)}
+      if obj.class == klazz
+        dependency_names.each {|a| obj.add_dependency(a)}
+      end
     end
   end
 
@@ -170,6 +173,7 @@ class AptitudePackage < Package
   end
 
   def installed? 
+    puts "checking if #@name is installed"
     search_results = `aptitude search #@aptitude_name`
     installed = search_results.reject {|r| not r =~ /^i/}
     not installed.empty?
