@@ -29,3 +29,28 @@ package(:clojure) {
     File.exists? "/opt/clojure/"
   }
 }
+
+package(:clojure) {
+  depends_on :java, :git, :ant
+  clojure_repo_url = "git://github.com/richhickey/clojure.git"
+  
+  install {
+    Git.clone clojure_repo_url, "#@downloads/clojure"
+    Ant.build "#@downloads/clojure/build.xml", "clojure"
+    Dir.make "/opt/clojure"
+    File.move "#@downloads/clojure/clojure.jar", "/opt/clojure/"
+    File.remove "#@downloads/clojure"
+    File.copy "#@support/clojure/clojure", "/op/clojure/"
+    File.symlink "/opt/clojure/clojure", "/usr/local/bin/"
+    File.chmod 0555, "/opt/clojure/clojure"
+  }
+  
+  remove {
+    File.remove "/opt/clojure/"
+    File.remove "/usr/local/bin/clojure"
+  }
+
+  installed? {
+    File.exists? "/opt/clojure/"
+  }
+}

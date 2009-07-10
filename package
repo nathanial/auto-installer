@@ -1,0 +1,19 @@
+#!/bin/sh
+
+AUTO_INSTALLER_HOME="/home/nathan/development/projects/auto-installer"
+export AUTO_INSTALLER_HOME
+
+if [ "$(whoami)" != "root" ]
+then
+    echo "must be root to run this script"
+    exit 1
+fi
+
+if [ -z $AUTO_INSTALLER_HOME/downloads ]; then
+    mkdir $AUTO_INSTALLER_HOME/downloads
+fi
+if [ -z $AUTO_INSTALLER_HOME/support ]; then 
+    mkdir $AUTO_INSTALLER_HOME/support
+fi
+
+ruby $AUTO_INSTALLER_HOME/autoinstall.rb $@

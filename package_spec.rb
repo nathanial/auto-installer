@@ -101,7 +101,7 @@ describe "package" do
     it "should add new dependency" do 
       foo = package(:foo) {}
       foo.add_dependency(:bar)
-      foo.dependencies.count.should eql(1)
+      foo.dependency_names.count.should eql(1)
     end
   end
 end

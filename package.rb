@@ -63,7 +63,11 @@ class Packages
     end
     
     def lookup(name)
-      @@registered_packages[name]
+      p = @@registered_packages[name]
+      if not p
+        raise "cannot find package name #{name}"
+      end
+      return p
     end
     
     def clear 
@@ -96,6 +100,7 @@ end
 
 class Package
   attr_accessor :name
+  attr_reader :dependency_names
 
   def initialize(name, dependency_names = [])
     @name = name
@@ -141,6 +146,26 @@ class AptitudePackage < Package
   def initialize(name, aptitude_name)
     super(name, [])
     @aptitude_name = aptitude_name
+    @install_callback = lambda {
+      system("aptitude -y install #@aptitude_name")
+    }   
+    @remove_callback = lambda {
+      system("aptitude -y remove #@aptitude_name")
+    }
+    @installed_callback = lambda {
+      search_results = `aptitude search #@aptitude_name`
+      installed = search_results.reject do |r| 
+        (not r =~ /^i/) or (not r =~ / #@aptitude_name /)
+      end
+      not installed.empty?
+    }
+  end
+end
+
+class AptitudePackage < Package
+  def initialize(name, aptitude_name)
+    super(name, [])
+    @aptitude_name = aptitude_name
   end
 
   def install
@@ -156,6 +181,17 @@ class AptitudePackage < Package
     installed = search_results.reject {|r| not r =~ /^i/}
     not installed.empty?
   end
+
+  def method_missing(m, *args)
+    block = args[0]
+    me = self
+    func = lambda do
+      me.instance_eval(&block)
+    end
+      
+    (class << @package; self; end).send :define_method, m, &func
+  end
+
 end
 
 class GemPackage < Package
