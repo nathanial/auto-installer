@@ -227,6 +227,8 @@ def aptitude_packages(hash)
   names = hash.keys
   for name in names
     p = AptitudePackage.new(name, hash[name])
+    advise_install(p)
+    advise_remove(p)
     p.register
   end
 end
