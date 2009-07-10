@@ -3,6 +3,12 @@ $LOAD_PATH << ENV['AUTO_INSTALLER_HOME']
 require 'package'
 require 'rubygems'
 require 'aquarium'
+require 'fileutils'
+include FileUtils
+
+Dir.glob("#{ENV['AUTO_INSTALLER_HOME']}/downloads/*").each do |p|
+  rm_rf p
+end
 
 Dir.glob("#{ENV['AUTO_INSTALLER_HOME']}/packages/*").each do |p|
   if p =~ /[.]rb$/
