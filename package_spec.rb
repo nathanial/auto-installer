@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'package'
 
 describe "the all predicate" do
@@ -108,6 +109,18 @@ describe "package" do
       foo.add_dependency(:bar)
       foo.dependency_names.count.should eql(1)
     end
+  end
+
+  describe "depends_on" do
+    it "should add new dependencies" do
+      package(:a) {}
+      package(:b) {} 
+      package(:c) {}
+      foo = package(:foo) {
+        depends_on :a, :b, :c
+      }
+      foo.dependency_names.count.should eql(3)
+    end      
   end
 end
  
