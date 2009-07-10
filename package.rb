@@ -43,27 +43,9 @@ def some(collection, predicate)
   return false
 end
 
-class AbstractPackages
-  def self.lookup_and_forward(*methods)
-    if methods.count == 1 and methods.first.class == Array
-      methods = methods.first
-    end
-    
-    for method in methods
-      self.class_eval("""
-def self.#{method}(name)
-  Packages.lookup(name).#{method}
-end
-""")
-    end
-  end
-end
-
-class Packages < AbstractPackages
+class Packages
   @@registered_packages = {}
-  lookup_and_forward :install, :remove, :installed?
-  lookup_and_forward :run_install_hooks, :run_remove_hooks
-  
+
   class << self 
     def register(*args)
       if args.count == 1
@@ -91,136 +73,48 @@ class Packages < AbstractPackages
     def count
       @@registered_packages.count
     end
+
+    def method_missing(m, *args)
+      method_name = m
+      package_name = args[0]
+      arguments = args[1..args.length]
+      package = Packages.lookup(package_name)
+      case method_name
+      when 'install' 
+        if not package.installed?
+          package.dependencies.each {|d| d.install}
+          return package.install
+        end          
+      when 'remove'
+          return package.remove(*arguments) if package.installed?
+      else
+        package.send method_name, *arguments
+      end        
+    end
   end
 end
 
 class Package
-  attr_accessor :install_callback, :remove_callback, :installed_callback
-  attr_accessor :name, :before_install_hooks, :after_install_hooks
-  attr_accessor :before_remove_hooks, :after_remove_hooks
+  attr_accessor :name
 
   def initialize(name, dependency_names = [])
     @name = name
-    @dependency_names = dependency_names
-
-    @install_callback = $do_nothing
-    @before_install_hooks = []
-    @after_install_hooks = []
-
-    @remove_callback = $do_nothing
-    @before_remove_hooks = []
-    @after_remove_hooks = []
-
-    @installed_callback = $do_nothing
-  end
-
-  def install
-    result = nil
-    unless installed?
-      run_install_hooks(:before)
-      dependencies.each {|d| d.install}
-      result = @install_callback.call
-      run_install_hooks(:after)
-    end
-    result
-  end
-
-  def remove
-    result = nil
-    if installed?
-      run_remove_hooks(:before)
-      result = @remove_callback.call
-      run_remove_hooks(:after)
-    end
-    result
-  end
-
-  def installed?
-    @installed_callback.call
-  end
-
-  def add_install_hook(where, callback)
-    case where
-    when :before then @before_install_hooks << callback
-    when :after then @after_install_hooks << callback
-    else raise "where must be :before or :after"
-    end
-  end
-
-  def add_remove_hook(where, callback)
-    case where
-    when :before then @before_remove_hooks << callback
-    when :after then @after_remove_hooks << callback
-    else raise "where must be :before or :after"
-    end
+    @dependency_names = dependency_names    
+    @home = ENV['AUTO_INSTALLER_HOME']
+    @support = "#@home/support"
+    @downloads = "#@home/downloads"
   end
 
   def add_dependency(dependency)
     @dependency_names << dependency
   end
 
-  def run_install_hooks(which = :all)
-    case which
-    when :before then @before_install_hooks.each {|h| h.call}
-    when :after then @after_install_hooks.each {|h| h.call}
-    when :all then 
-      run_install_hooks(:before)
-      run_install_hooks(:after)
-    else raise "which must be :before|:after|:all"
-    end
-  end
-
-  def run_remove_hooks(which = :all)
-    case which
-    when :before then @before_remove_hooks.each {|h| h.call}
-    when :after then @after_remove_hooks.each {|h| h.call}
-    when :all then 
-      run_remove_hooks(:before)
-      run_remove_hooks(:after)
-    else raise "which must be :before|:after|:all"
-    end    
-  end
-
-  def register
-    Packages.register(self)
-  end
-
-  def unregister
-    Packages.unregister(self)
-  end
-
   def dependencies
     @dependency_names.map {|name| Packages.lookup(name)}
   end
-end  
 
-class AptitudePackage < Package
-  def initialize(name, aptitude_name)
-    super(name, [])
-    @aptitude_name = aptitude_name
-    @install_callback = lambda {
-      system("aptitude -y install #@aptitude_name")
-    }   
-    @remove_callback = lambda {
-      system("aptitude -y remove #@aptitude_name")
-    }
-    @installed_callback = lambda {
-      search_results = `aptitude search #@aptitude_name`
-      installed = search_results.reject {|r| not r =~ /^i/}
-      not installed.empty?
-    }
-  end
-end
-
-class PackageBuilder
-  attr_accessor :package
-  def initialize(name)
-    @name = name
-    @home = ENV['AUTO_INSTALLER_HOME']
-    @support = "#@home/support"
-    @downloads = "#@home/downloads"
-    @package = Package.new(name)
-    @package.register
+  def depends_on(*args)
+    args.each {|a| add_dependency a}
   end
 
   def process_support_files
@@ -233,104 +127,54 @@ class PackageBuilder
       end
     end
   end
-  
-  def install(&block)
-    @package.install_callback = block
+
+  def register
+    Packages.register(self)
   end
 
-  def remove(&block)
-    @package.remove_callback = block
+  def unregister
+    Packages.unregister(self)
   end
-  
-  def installed?(&block)
-    @package.installed_callback = block
+end  
+
+class AptitudePackage < Package
+  def initialize(name, aptitude_name)
+    super(name, [])
+    @aptitude_name = aptitude_name
   end
 
-  def depends_on(*args)
-    if args.count == 1 and args.first.class == Array
-      vector = args.first
-      vector.each {|d| @package.add_dependency(d) }
-    else 
-      args.each {|d| @package.add_dependency(d) }
-    end
+  def install
+    shell_out("aptitude -y install #@aptitude_name")
   end
 
-  def before_install(&block)
-    @package.add_install_hook :before, block
+  def remove
+    system("aptitude -y remove #@aptitude_name")
   end
 
-  def before_remove(&block)
-    @package.add_remove_hook :before, block
-  end
-
-  def after_install(&block)
-    @package.add_install_hook :after, block
-  end
-
-  def after_remove(&block)
-    @package.add_remove_hook :after, block
-  end
-
-  def define(name, &block)
-    (class << self; self; end).send :define_method, name, &block
+  def installed? 
+    search_results = `aptitude search #@aptitude_name`
+    installed = search_results.reject {|r| not r =~ /^i/}
+    not installed.empty?
   end
 end
 
-class MetaPackageBuilder < PackageBuilder
-  attr_accessor :package
+class GemPackage < Package
+  def initialize(name, gem_name)
+    super(name, [])
+    @gem_name = gem_name
+  end
+
+  def install
+    shell_out("gem install #@gem_name")
+  end
   
-  def initialize(name)
-    super(name)
+  def remove 
+    system("gem uninstall #@gem_name")
   end
-
-  def is_one_of(*package_names)
-    @package.install_callback = lambda do
-      packages = lookup_packages(package_names)
-      if not some(packages, lambda {|p| p.installed?})
-        packages.first.install
-      end
-    end
-    @package.remove_callback = lambda do
-      packages = lookup_packages(package_names)      
-      packages.each {|p| p.remove}
-    end
-    @package.installed_callback = lambda do
-      packages = lookup_packages(package_names)
-      some(packages, lambda {|p| p.installed? })
-    end
+  
+  def installed?
+    shell_out("ruby -e \"require '#@gem_name'\"")
   end
-
-  def consists_of(*package_names)
-    @package.install_callback = lambda do
-      packages = lookup_packages(package_names)
-      packages.each {|p| p.install}
-    end
-    @package.remove_callback = lambda do
-      packages = lookup_packages(package_names)
-      packages.each {|p| p.remove}
-    end
-    @package.installed_callback = lambda do
-      packages = lookup_packages(package_names)
-      all(packages, lambda { |p| p.installed? })
-    end
-  end
-
-  private 
-  def lookup_packages(package_names)
-    package_names.map {|name| Packages.lookup(name)}
-  end
-end
-
-def package(name, &block)
-  builder = PackageBuilder.new(name)
-  builder.instance_eval(&block)
-  builder.package
-end
-
-def meta_package(name, &block)
-  builder = MetaPackageBuilder.new(name)
-  builder.instance_eval(&block)
-  builder.package
 end
 
 def aptitude_packages(hash)
@@ -342,4 +186,18 @@ end
 
 def aptitude_package(name, aptitude_name)
   AptitudePackage.new(name, aptitude_name).register
+end
+
+def package(name, &block)
+  p = Package.new(name)
+  p.instance_eval &block
+  p.register
+  return p
+end
+
+def gem_package(name, gem_name, &block)
+  p = GemPackage.new(name, gem_name)
+  p.instance_eval &block
+  p.register
+  return p
 end

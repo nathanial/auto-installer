@@ -23,35 +23,46 @@ aptitude_packages({
   :expect => 'expect'
 })
 
-package(:http_client_gem){
+gem_package(:http_client_gem, 'httpclient') do
   depends_on :ruby, :rubygems
-  install { shell_out("gem install httpclient") }
-  remove { shell_out("gem uninstall httpclient") }
-  installed? { shell_out("ruby -e \"require 'httpclient'\"") }
-}
+end
 
-package(:openssl_nonblock_gem){
+gem_package(:openssl_nonblock_gem, 'openssl-nonblock') do
   depends_on :ruby, :rubygems
-  install { shell_out("gem install openssl-nonblock") }
-  remove { shell_out("gem uninstall openssl-nonblock") }
-  installed? { shell_out("ruby -e \"require 'openssl'\"") }
-}
+end
 
-package(:rspec_gem){
+package(:rspec_gem) do
   depends_on :ruby, :rubygems
-  install { 
+
+  def install 
     shell_out("gem install rspec --no-rdoc") 
     shell_out("aptitude -y install librspec-ruby1.8")
-  }
-  remove { 
+  end
+
+  def remove 
     shell_out("gem uninstall rspec") 
     shell_out("aptitude -y remove librspec-ruby1.8")
-  }
-  installed? { `which spec`.strip != '' }
-}
+  end
 
-meta_package(:python) {
-  is_one_of :python25, :python26
-}
+  def installed?
+    `which spec`.strip != ''
+  end
+end
+
+package(:python) do 
+  def installed?
+    some([:python25, :python26], lambda {|p| Package.installed? p})
+  end
+
+  def install 
+    Packages.install :python25
+  end
+
+  def remove
+    "do nothing"
+  end
+end
+    
+      
 
 

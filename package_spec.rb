@@ -36,7 +36,7 @@ describe "package" do
   end
   
   it "should self register" do
-    package(:foo) {}
+    Package.new(:foo).register
     Packages.count.should eql(1)
     lambda { Packages.lookup(:foo) }.should_not raise_error
   end
@@ -44,102 +44,59 @@ describe "package" do
   describe "defaults" do
     foo = nil
     before(:all) do
-      foo = package(:foo) {}
+      foo = Package.new(:foo)
+      foo.register
     end
 
-    it "should all equal $do_nothing" do
-      foo.install_callback.should eql($do_nothing)
-      lambda { foo.install }.should_not raise_error
+    it "should all be absent" do
+      lambda { foo.install }.should raise_error
 
-      foo.remove_callback.should eql($do_nothing)
-      lambda { foo.remove }.should_not raise_error
+      lambda { foo.remove }.should raise_error
 
-      foo.installed_callback.should eql($do_nothing)
-      lambda { foo.installed? }.should_not raise_error
+      lambda { foo.installed? }.should raise_error
     end
   end
 
   describe "install" do
     it "should set install_callback" do
-      package(:foo) {
-        install {
+        
+      package(:foo) do
+        def install 
           "I install"
-        }
-        installed? { false }
-      }
+        end
+        def installed?
+          false
+        end
+      end
       Packages.install(:foo).should eql("I install")
     end
   end
 
   describe "remove" do
     it "should set remove_callback" do
-      package(:foo) {
-        remove {
+      package(:foo) do
+        def remove 
           "I remove"
-        }
-        installed? { true }
-      }
+        end
+        def installed?
+          true
+        end
+      end
       Packages.remove(:foo).should eql("I remove")
     end
   end
 
   describe "installed?" do 
     it "should set installed_callback" do 
-      package(:foo) {
-        installed? {
+      package(:foo) do
+        def installed? 
           "I'm installed" 
-        }
-      }
+        end
+      end
       Packages.installed?(:foo).should eql("I'm installed")
     end
   end
     
-  describe "before_install" do
-    it "should add a before_install_hook" do
-      foo = package(:foo) {
-        before_install {}
-      }
-      foo.instance_eval { @before_install_hooks }.count.should eql(1)
-    end
-  end
-  
-  describe "before_install_hooks" do
-    it "should be able to run before_install" do 
-      order_mock = mock(:order_test)
-      order_mock.should_receive(:before).ordered
-      order_mock.should_receive(:install).ordered
-      foo = package(:foo) {
-        before_install {
-          order_mock.before
-        }
-        install {
-          order_mock.install
-        }
-      }
-      foo.install
-    end  
-  end    
-
-  describe "after_install" do 
-    it "should add an after_install_hook" do 
-      package(:foo) {
-        after_install {}
-      }
-      Packages.lookup(:foo).after_install_hooks.count.should eql(1)
-    end
-  end
-    
-  it "should set remove_hooks" do
-    flag = false
-    package(:foo) {
-      before_remove {
-        flag = true
-      }
-    }
-    Packages.run_remove_hooks(:foo)
-    flag.should be_true
-  end
-
   describe "add_dependency" do
     it "should add new dependency" do 
       foo = package(:foo) {}
@@ -147,78 +104,5 @@ describe "package" do
       foo.dependencies.count.should eql(1)
     end
   end
-
 end
-  
-describe "meta_package method" do
-  before(:each) do
-    Packages.clear
-  end
-
-  it "should register a package" do
-    meta_package(:foo) {}
-    Packages.count.should eql(1)
-  end
-
-  describe "consists_of" do
-    before(:each) do 
-      Packages.clear
-    end
-
-    it "should be installed if all packages are installed" do 
-      foo = mock(:foo)
-      bar = mock(:bar)
-      Packages.register(:foo,foo)
-      Packages.register(:bar,bar)
-      meta_package(:baz) {
-        consists_of :foo, :bar
-      }
-      foo.stub!(:installed?).and_return(true)
-      bar.stub!(:installed?).and_return(true)
-      Packages.installed?(:baz).should be_true
-    end
-
-    it "should not be installed if any package isn't installed" do
-      foo = mock(:foo)
-      bar = mock(:bar)
-      Packages.register(:foo,foo)
-      Packages.register(:bar,bar)
-      meta_package(:baz) { 
-        consists_of :foo, :bar
-      }
-      foo.stub!(:installed?).and_return(true)
-      bar.stub!(:installed?).and_return(false)
-      Packages.installed?(:baz).should be_false
-    end
-
-    it "should install all packages" do
-      foo = mock(:foo)
-      bar = mock(:bar)
-      Packages.register(:foo,foo)
-      Packages.register(:bar,bar)
-      meta_package(:baz) {
-        consists_of :foo, :bar
-      }
-      foo.stub!(:installed?).and_return(false)
-      bar.stub!(:installed?).and_return(false)
-      foo.should_receive(:install)
-      bar.should_receive(:install)
-      Packages.install(:baz)
-    end
-
-    it "should remove all packages" do
-      foo = mock(:foo)
-      bar = mock(:bar)
-      Packages.register(:foo,foo)
-      Packages.register(:bar,bar)
-      meta_package(:baz) {
-        consists_of :foo, :bar
-      }
-      foo.stub!(:installed?).and_return(true)
-      bar.stub!(:installed?).and_return(true)
-      foo.should_receive(:remove)
-      bar.should_receive(:remove)
-      Packages.remove(:baz)
-    end
-  end
-end
+ 
