@@ -27,8 +27,7 @@ package(:tdsurface) do
   end
 
   def remove
-    puts "removing tdsurface"
-    shell_out("service apache2 stop")
+    system("service apache2 stop")
     rm_rf '/var/django-projects'
     rm_rf '/var/matplotlib'
     rm_rf '/var/log/tdsurface'
