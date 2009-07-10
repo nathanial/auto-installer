@@ -55,6 +55,7 @@ class Packages
       else 
         name = args[0]
         package = args[1]
+        puts "registering #{package} as #{name}"
         @@registered_packages[name] = package
       end
     end
@@ -90,24 +91,32 @@ class Packages
 end
 
 class Package
-  attr_accessor :name, :dependency_names
+  attr_accessor :dependency_names, :name
 
-  def initialize(name, dependency_names = [])
-    @name = name
-    @dependency_names = dependency_names    
+  def initialize
+    @dependency_names = []
     @home = ENV['AUTO_INSTALLER_HOME']
     @support = "#@home/support"
     @downloads = "#@home/downloads"
   end
 
+  def install 
+    raise "unimplemented"
+  end
+
+  def remove 
+    raise "unimplemented"
+  end
+
+  def installed?
+    raise "unimplemented"
+  end
+
   def self.depends_on(*dependency_names)
-    klazz = self
-    Aspect.new :after, :method => :initialize, :type => Package,
-    :method_options => :include_descendent_methods, 
+    Aspect.new :after, :method => :initialize, :type => self,
     :restricting_methods_to => :private_methods do |point, obj, *args|
-      if obj.class == klazz
-        dependency_names.each {|a| obj.add_dependency(a)}
-      end
+      puts "in depends_on for #{self} with dependencies = #{dependency_names}" 
+      dependency_names.each {|a| obj.add_dependency(a)}
     end
   end
 
@@ -130,14 +139,6 @@ class Package
     end
   end
 
-  def register
-    Packages.register(self)
-  end
-
-  def unregister
-    Packages.unregister(self)
-  end
-
   def to_s
     "Package #@name"
   end
@@ -153,14 +154,7 @@ end
 
 class AptitudePackage < Package
   def initialize(name, aptitude_name)
-    super(name, [])
-    @aptitude_name = aptitude_name
-  end
-end
-
-class AptitudePackage < Package
-  def initialize(name, aptitude_name)
-    super(name, [])
+    @name = name
     @aptitude_name = aptitude_name
   end
 
@@ -178,22 +172,13 @@ class AptitudePackage < Package
     installed = search_results.reject {|r| not r =~ /^i/}
     not installed.empty?
   end
-
-  def method_missing(m, *args)
-    block = args[0]
-    me = self
-    func = lambda do
-      me.instance_eval(&block)
-    end
-      
-    (class << @package; self; end).send :define_method, m, &func
-  end
-
 end
 
 class GemPackage < Package
+  attr_accessor :name, :gem_name
+
   def initialize(name, gem_name)
-    super(name, [])
+    @name = name
     @gem_name = gem_name
   end
 
@@ -210,57 +195,22 @@ class GemPackage < Package
   end
 end
 
-def advise_install(p)
-  Aspect.new :around, :method => :install, :object => p do |point, x, *args|
-    if not x.installed? 
-      x.dependencies.each {|d| d.install}
-      point.proceed
-    end
-  end
-end  
-
-def advise_remove(p)
-  Aspect.new :around, :method => :remove, :object => p do |point, x, *args|
-    if x.installed?
-      point.proceed
-    end
-  end
-end
-
 def aptitude_packages(hash)
   names = hash.keys
   for name in names
     p = AptitudePackage.new(name, hash[name])
-    advise_install(p)
-    advise_remove(p)
-    p.register
+    Packages.register(p)
   end
 end
 
 def aptitude_package(name, aptitude_name)
   p = AptitudePackage.new(name, aptitude_name)
-  advise_install(p)
-  advise_remove(p)
-  p.register
+  Packages.register(p)
   return p
 end
 
-def package(name, &block)
-  klazz = Class.new(Package)
-  klazz.class_eval(&block)
-  p = klazz.new(name)
-  advise_install(p)
-  advise_remove(p)
-  p.register
-  return p
-end
-
-def gem_package(name, gem_name, &block)
-  klazz = Class.new(GemPackage)
-  klazz.class_eval(&block)
-  p = klazz.new(name, gem_name)
-  advise_install(p)
-  advise_remove(p)
-  p.register
+def gem_package(name, gem_name)
+  p = GemPackage.new(name, gem_name)
+  Packages.register(p)
   return p
 end

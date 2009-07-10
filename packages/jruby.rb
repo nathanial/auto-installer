@@ -3,7 +3,7 @@ require 'httpclient'
 require 'fileutils'
 include FileUtils
 
-package(:jruby) do
+class JRuby < Package
   depends_on :java, :git
   @@jruby_repo_url = "git://github.com/jruby/jruby.git"
 
@@ -19,5 +19,5 @@ package(:jruby) do
   def installed? 
     File.exists? "/opt/jruby"
   end
-
 end
+Packages.register(:jruby, JRuby.new)

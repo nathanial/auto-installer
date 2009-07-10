@@ -1,7 +1,7 @@
 require 'fileutils'
 include FileUtils
 
-package(:tdsurface) do
+class TDSurface < Package
   depends_on :mysql_server, :apache2, :svn, :git, :django, :expect
   depends_on :python_tz, :matplotlib, :mod_python, :python_mysqldb
 
@@ -71,4 +71,4 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
     shell_out("expect #@support/tdsurface/expect_script.tcl")
   end
 end
-
+Packages.register(:tdsurface, TDSurface.new)

@@ -3,11 +3,12 @@ require 'httpclient'
 require 'fileutils'
 include FileUtils
 
-package(:clojure) do
+class Clojure < Package
   depends_on :java, :git, :ant
   @@clojure_repo_url = "git://github.com/richhickey/clojure.git"
   
   def install 
+    puts "git clone #@@clojure_repo_url #@downloads/clojure"
     shell_out("git clone #@@clojure_repo_url #@downloads/clojure")
     shell_out("ant -f #@downloads/clojure/build.xml clojure")
     mkdir_p "/opt/clojure/"
@@ -27,3 +28,4 @@ package(:clojure) do
     File.exists? "/opt/clojure/"
   end
 end
+Packages.register(:clojure, Clojure.new)

@@ -23,15 +23,10 @@ aptitude_packages({
   :expect => 'expect'
 })
 
-gem_package(:http_client_gem, 'httpclient') do
-  depends_on :ruby, :rubygems
-end
+gem_package(:http_client_gem, :gem => 'httpclient')
+gem_package(:openssl_nonblock_gem, :gem => 'openssl-nonblock')
 
-gem_package(:openssl_nonblock_gem, 'openssl-nonblock') do
-  depends_on :ruby, :rubygems
-end
-
-package(:rspec_gem) do
+class RSpecGem < Package
   depends_on :ruby, :rubygems
 
   def install 
@@ -48,9 +43,9 @@ package(:rspec_gem) do
     `which spec`.strip != ''
   end
 end
+Packages.register(:rspec_gem, RSpecGem.new)
 
-package(:python) do 
-
+class Python < Package
   def installed?
     some([:python25, :python26], lambda {|p| Packages.installed? p})
   end
@@ -63,7 +58,7 @@ package(:python) do
     "do nothing"
   end
 end
-    
+Packages.register(:python, Python.new)    
       
 
 

@@ -1,5 +1,5 @@
 
-package(:build_server) do
+class BuildServer < Package
   depends_on :hudson, :tdsurface, :rspec_gem
   
   def install
@@ -20,3 +20,4 @@ package(:build_server) do
     Packages.remove(:hudson)
   end
 end
+Packages.register(:build_server, BuildServer.new)

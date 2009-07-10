@@ -1,9 +1,7 @@
-require 'package'
-require 'packages/general'
 require 'fileutils'
 include FileUtils
 
-package(:my_emacs) do
+class MyEmacs < Package
   depends_on :emacs, :git
   @@site_lisp_dir = "/usr/share/emacs/site-lisp"
 
@@ -21,8 +19,9 @@ package(:my_emacs) do
     File.exists? "#@@site_lisp_dir/mode-loader.el"
   end
 end
+Packages.register(:my_emacs, MyEmacs.new)
 
-package(:my_keybindings) do
+class MyKeybindings < Package
   def install
     cp "#@support/my_environment/xmodmap", "#{ENV['HOME']}/.xmodmap"
     shell_out("xmodmap #{ENV['HOME']}/.xmodmap")
@@ -36,3 +35,4 @@ package(:my_keybindings) do
     File.exists? "#{ENV['HOME']}/.xmodmap"
   end
 end
+Packages.register(:my_keybindings, MyKeybindings.new)

@@ -1,13 +1,12 @@
-require 'package'
-require 'packages/general'
 require 'open-uri'
 require 'rubygems'
 require 'httpclient'
 require 'fileutils'
 include FileUtils
 
-package(:activemq) do
+class ActiveMQ < Package
   depends_on :java, :svn
+
   @@apache_activemq_url = "http://mirror-fpt-telecom.fpt.net/apache/activemq/apache-activemq/5.2.0/apache-activemq-5.2.0-bin.tar.gz"
 
   def install
@@ -41,3 +40,4 @@ package(:activemq) do
     File.exists?("/opt/apache-activemq-5.2.0")
   end
 end
+Packages.register(:activemq, ActiveMQ.new)

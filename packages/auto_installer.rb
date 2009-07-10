@@ -1,5 +1,5 @@
 
-package(:auto_installer) do
+class AutoInstaller < Package
   depends_on :git, :ruby, :rubygems, :irb
   depends_on :libopenssl_ruby, :http_client_gem
   depends_on :openssl_nonblock_gem
@@ -16,4 +16,4 @@ package(:auto_installer) do
     File.exists? "/usr/local/bin/package"
   end
 end
-    
+Packages.register(:auto_installer, AutoInstaller.new)

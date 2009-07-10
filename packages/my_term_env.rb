@@ -1,11 +1,9 @@
-require 'package'
-require 'packages/general'
 require 'fileutils'
 include FileUtils
 
 aptitude_package(:emacs_term, 'emacs-snapshot')
 
-package(:my_term_emacs) do
+class MyTermEmacs < Package
   depends_on :emacs_term, :git
   @@site_lisp_dir = "/usr/share/emacs/site-lisp"
 
@@ -23,3 +21,4 @@ package(:my_term_emacs) do
     File.exists? "#@@site_lisp_dir/mode-loader.el"
   end
 end
+Packages.register(:my_term_emacs, MyTermEmacs.new)

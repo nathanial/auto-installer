@@ -3,7 +3,7 @@ require 'httpclient'
 require 'fileutils'
 include FileUtils
 
-package(:selenium) do
+class Selenium < Package
   depends_on :java
   @@selenium_url = "http://release.seleniumhq.org/selenium-remote-control/1.0.1/selenium-remote-control-1.0.1-dist.zip"
 
@@ -38,3 +38,4 @@ package(:selenium) do
     File.exists? '/opt/selenium' 
   end
 end
+Packages.register(:selenium, Selenium.new)
