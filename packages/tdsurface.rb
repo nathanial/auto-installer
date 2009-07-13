@@ -9,7 +9,7 @@ class TDSurface < Package
     `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
 
   @@password = SETTINGS[:tdsurface][:password]
-
+  
   def install
     process_support_files
     mkdir_p(['/var/django-projects', '/var/matplotlib', '/var/log/tdsurface'])
@@ -71,4 +71,4 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
     shell_out("expect #@support/tdsurface/expect_script.tcl")
   end
 end
-Packages.register(:tdsurface, TDSurface.new)
+Packages.register(:tdsurface, TDSurface.new(:tdsurface))

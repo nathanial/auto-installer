@@ -28,4 +28,4 @@ class Clojure < Package
     File.exists? "/opt/clojure/"
   end
 end
-Packages.register(:clojure, Clojure.new)
+Packages.register(:clojure, Clojure.new(:clojure))

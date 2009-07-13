@@ -40,4 +40,4 @@ class ActiveMQ < Package
     File.exists?("/opt/apache-activemq-5.2.0")
   end
 end
-Packages.register(:activemq, ActiveMQ.new)
+Packages.register(:activemq, ActiveMQ.new(:activemq))

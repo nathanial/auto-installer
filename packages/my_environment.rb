@@ -19,7 +19,7 @@ class MyEmacs < Package
     File.exists? "#@@site_lisp_dir/mode-loader.el"
   end
 end
-Packages.register(:my_emacs, MyEmacs.new)
+Packages.register(:my_emacs, MyEmacs.new(:my_emacs))
 
 class MyKeybindings < Package
   def install
@@ -35,4 +35,4 @@ class MyKeybindings < Package
     File.exists? "#{ENV['HOME']}/.xmodmap"
   end
 end
-Packages.register(:my_keybindings, MyKeybindings.new)
+Packages.register(:my_keybindings, MyKeybindings.new(:my_emacs))

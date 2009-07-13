@@ -16,4 +16,4 @@ class AutoInstaller < Package
     File.exists? "/usr/local/bin/package"
   end
 end
-Packages.register(:auto_installer, AutoInstaller.new)
+Packages.register(:auto_installer, AutoInstaller.new(:auto_installer))

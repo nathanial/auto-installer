@@ -65,4 +65,4 @@ class Hudson < Package
     end
   end
 end
-Packages.register(:hudson, Hudson.new)
+Packages.register(:hudson, Hudson.new(:hudson))

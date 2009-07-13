@@ -38,4 +38,4 @@ class Selenium < Package
     File.exists? '/opt/selenium' 
   end
 end
-Packages.register(:selenium, Selenium.new)
+Packages.register(:selenium, Selenium.new(:selenium))

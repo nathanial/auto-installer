@@ -43,7 +43,7 @@ class RSpecGem < Package
     `which spec`.strip != ''
   end
 end
-Packages.register(:rspec_gem, RSpecGem.new)
+Packages.register(:rspec_gem, RSpecGem.new(:rspec_gem))
 
 class Python < Package
   def installed?
@@ -58,7 +58,7 @@ class Python < Package
     "do nothing"
   end
 end
-Packages.register(:python, Python.new)    
+Packages.register(:python, Python.new(:python))
       
 
 

@@ -3,7 +3,9 @@ require 'erb'
 require 'rexml/document'
 require 'rubygems'
 require 'aquarium'
+require 'logging'
 include Aquarium::Aspects
+include Logging
 
 SETTINGS = {}
 
@@ -44,6 +46,8 @@ def some(collection, predicate)
   return false
 end
 
+class PackageNotFound < Exception; end
+
 class Packages
   @@registered_packages = {}
 
@@ -55,7 +59,7 @@ class Packages
       else 
         name = args[0]
         package = args[1]
-        puts "registering #{package} as #{name}"
+        debug "registering #{package} as #{name}"
         @@registered_packages[name] = package
       end
     end
@@ -67,7 +71,7 @@ class Packages
     def lookup(name)
       p = @@registered_packages[name]
       if not p
-        raise "cannot find package name #{name}"
+        raise PackageNotFound.new("cannot find package name \"#{name}\"")
       end
       return p
     end
@@ -93,7 +97,8 @@ end
 class Package
   attr_accessor :dependency_names, :name
 
-  def initialize
+  def initialize(name)
+    @name = name
     @dependency_names = []
     @home = ENV['AUTO_INSTALLER_HOME']
     @support = "#@home/support"
@@ -115,7 +120,6 @@ class Package
   def self.depends_on(*dependency_names)
     Aspect.new :after, :method => :initialize, :type => self,
     :restricting_methods_to => :private_methods do |point, obj, *args|
-      puts "in depends_on for #{self} with dependencies = #{dependency_names}" 
       dependency_names.each {|a| obj.add_dependency(a)}
     end
   end
@@ -125,14 +129,11 @@ class Package
   end
 
   def dependencies
-    @dependency_names.map {|name|
-      result = Packages.lookup(name)
-      puts "#{name} = #{result}"
-      result
-    }
+    @dependency_names.map {|name| Packages.lookup(name) }
   end
 
   def process_support_files
+    debug "processesing #@support/#{@name.to_s}/*"
     Dir.glob("#@support/#{@name.to_s}/*").each do |file|
       if File.file? file and /(\.*)(.erb$)/ =~ file
         fname = file.scan(/(.*)(.erb$)/)[0][0]
@@ -160,8 +161,7 @@ class AptitudePackage < Package
   attr_accessor :name, :aptitude_name
   
   def initialize(name, aptitude_name)
-    super()
-    @name = name
+    super(name)
     @aptitude_name = aptitude_name
   end
 
@@ -174,7 +174,7 @@ class AptitudePackage < Package
   end
 
   def installed? 
-    puts "checking if #@name is installed"
+    debug "checking if #@name is installed"
     search_results = `aptitude search #@aptitude_name`
     installed = search_results.reject {|r| not r =~ /^i/ or not r =~ / #@aptitude_name /}
     not installed.empty?
@@ -185,8 +185,7 @@ class GemPackage < Package
   attr_accessor :name, :gem_name
 
   def initialize(name, gem_name)
-    super()
-    @name = name
+    super(name)
     @gem_name = gem_name
   end
 

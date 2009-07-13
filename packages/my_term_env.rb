@@ -21,4 +21,4 @@ class MyTermEmacs < Package
     File.exists? "#@@site_lisp_dir/mode-loader.el"
   end
 end
-Packages.register(:my_term_emacs, MyTermEmacs.new)
+Packages.register(:my_term_emacs, MyTermEmacs.new(:my_term_emacs))

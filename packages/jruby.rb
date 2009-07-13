@@ -20,4 +20,4 @@ class JRuby < Package
     File.exists? "/opt/jruby"
   end
 end
-Packages.register(:jruby, JRuby.new)
+Packages.register(:jruby, JRuby.new(:jruby))
