@@ -38,6 +38,11 @@ def shell_out_force(text)
   system("#{text} > /dev/null")
 end
 
+def shell_out_verbose(text)
+  info(text)
+  raise "shell error with #{text}" unless system(text)
+end
+
 def procedure(&block)
   lambda { block.call }
 end
@@ -176,7 +181,7 @@ class AptitudePackage < Package
   end
 
   def install
-    shell_out("aptitude -y install #@aptitude_name")
+    shell_out_verbose("aptitude -y install #@aptitude_name")
   end
 
   def remove
