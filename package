@@ -1,6 +1,6 @@
 #!/bin/sh
 
-AUTO_INSTALLER_HOME="/var/development/auto-installer"
+AUTO_INSTALLER_HOME="/home/nathan/development/projects/auto-installer"
 export AUTO_INSTALLER_HOME
 
 if [ "$(whoami)" != "root" ]
