@@ -42,7 +42,12 @@ module ProgramOptions
       end
     end
     
-    parser.parse!(args)
+    begin
+      parser.parse!(args)
+    rescue
+      puts parser
+      exit
+    end
     options
   end
 end
