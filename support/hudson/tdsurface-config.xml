@@ -21,8 +21,7 @@
   </triggers>
   <builders>
     <hudson.tasks.Shell>
-      <command>/usr/local/bin/package remove tdsurface
-/usr/local/bin/package install tdsurface
+      <command>/usr/local/bin/package tdsurface reinstall
 sleep 5
 python tests/testall.py</command>
     </hudson.tasks.Shell>
