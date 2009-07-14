@@ -28,10 +28,14 @@ module ProgramOptions
       end
 
       opts.on("-c", "--commands [PACKAGE]", "List Commands for Package") do |package|
-        p = Packages.lookup(package.intern)
-        methods = p.methods - Package.instance_methods
-        for m in methods
-          puts m 
+        begin 
+          p = Packages.lookup(package.intern)
+          methods = p.methods - Package.instance_methods
+          for m in methods
+            puts m 
+          end
+        rescue Exception => e
+          error e.message
         end
         exit
       end

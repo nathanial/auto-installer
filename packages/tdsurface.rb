@@ -57,7 +57,7 @@ class TDSurface < Package
   end
   
   def download_tdsurface_project
-    info "downloading tdsurface source forom github"
+    info "downloading tdsurface source from github"
     shell_out("git clone git@github.com:teledrill/tdsurface.git /var/django-projects/tdsurface")
   end
 

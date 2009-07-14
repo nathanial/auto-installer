@@ -52,7 +52,8 @@ p = Packages.#{command}(:#{target}, *#{arguments})
 p = Packages.#{command}(:#{target})
 """
   end
-  puts eval text
+  result = eval text
+  puts result unless result.nil?
 rescue Exception => e
   error e.message
   exit 1
