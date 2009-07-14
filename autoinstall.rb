@@ -5,6 +5,7 @@ require 'rubygems'
 require 'aquarium'
 require 'fileutils'
 require 'logging'
+require 'options'
 include FileUtils
 include Logging
 
@@ -33,6 +34,9 @@ aspect2 = Aspect.new :around, :method => :remove, :on_type_and_descendents => Pa
     point.proceed
   end
 end
+
+ProgramOptions::handle_options(ARGV)
+
 
 target = ARGV[0]
 command = ARGV[1]

@@ -29,7 +29,13 @@ end
 parse_settings
 
 def shell_out(text)
-  raise "shell error with #{text}" unless system(text)
+  info(text)
+  raise "shell error with #{text}" unless system("#{text} > /dev/null")
+end
+
+def shell_out_force(text)
+  info(text)
+  system("#{text} > /dev/null")
 end
 
 def procedure(&block)
@@ -52,6 +58,10 @@ class Packages
   @@registered_packages = {}
 
   class << self 
+    def registered_packages
+      @@registered_packages
+    end
+
     def register(*args)
       if args.count == 1
         package = args[0]

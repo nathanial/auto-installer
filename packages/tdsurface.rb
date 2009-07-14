@@ -12,22 +12,16 @@ class TDSurface < Package
   
   def install
     process_support_files
-    mkdir_p(['/var/django-projects', '/var/matplotlib', '/var/log/tdsurface'])
-    shell_out("git clone git@github.com:teledrill/tdsurface.git /var/django-projects/tdsurface")
-    cp "#@support/tdsurface/django_local_settings.py", "/var/django-projects/tdsurface/settings_local.py"
-    chown("root", "www-data", ["/var/log/tdsurface"])
-    cp_r "#@@python_site_packages/django/contrib/admin/media", "/var/www/media"
-    cp_r "/var/django-projects/tdsurface/media","/var/www/"
+    create_tdsurface_directories
+    download_tdsurface_project
+    install_project_files
     shell_out("usermod -a -G dialout www-data")
     create_database
-    shell_out("expect #@support/tdsurface/expect_script.tcl")
-    cp "#@support/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
-    chmod_R(0777, ["/var/matplotlib", "/var/log/tdsurface"])
-    shell_out("service apache2 restart")
+    restart_apache
   end
 
   def remove
-    system("service apache2 stop")
+    shell_out_force("service apache2 stop")
     rm_rf '/var/django-projects'
     rm_rf '/var/matplotlib'
     rm_rf '/var/log/tdsurface'
@@ -35,14 +29,38 @@ class TDSurface < Package
     remove_database
     rm_f '/etc/apache2/conf.d/tdsurface'
     rm_f '/usr/local/bin/django-admin.py'
-    system("service apache2 start")
+    shell_out_force("service apache2 start")
   end
-
   
   def installed?
     File.exists? '/var/django-projects'
   end
+
+  def restart_apache
+    info "restarting apache"
+    shell_out("service apache2 restart")
+  end
+
+  def install_project_files 
+    info "installing tdsurface project files"
+    cp "#@support/tdsurface/django_local_settings.py", "/var/django-projects/tdsurface/settings_local.py"
+    chown("root", "www-data", ["/var/log/tdsurface"])
+    cp_r "#@@python_site_packages/django/contrib/admin/media", "/var/www/media"
+    cp_r "/var/django-projects/tdsurface/media","/var/www/"
+    cp "#@support/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
+    chmod_R(0777, ["/var/matplotlib", "/var/log/tdsurface"])
+  end
+
+  def create_tdsurface_directories
+    info "creating tdsurface directories"
+    mkdir_p(['/var/django-projects', '/var/matplotlib', '/var/log/tdsurface'])
+  end
   
+  def download_tdsurface_project
+    info "downloading tdsurface source forom github"
+    shell_out("git clone git@github.com:teledrill/tdsurface.git /var/django-projects/tdsurface")
+  end
+
   def reinstall 
     remove
     install
@@ -57,18 +75,18 @@ class TDSurface < Package
   end
   
   def create_database 
-    puts "create_database"
+    info "creating tdsurface database"
     shell_out("""mysql --user=root --password=#@@password -e \"
 CREATE DATABASE tdsurface;
 CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY '#@@password';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
+    shell_out("expect #@support/tdsurface/expect_script.tcl")
   end
 
-  def repair_database 
+  def reinstall_database 
     remove_database
     create_database
-    shell_out("expect #@support/tdsurface/expect_script.tcl")
   end
 end
 Packages.register(:tdsurface, TDSurface.new(:tdsurface))
