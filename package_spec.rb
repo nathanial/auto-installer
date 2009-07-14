@@ -25,7 +25,7 @@ describe Package do
   describe "register" do
     it "should increment package_directory.count" do
       lambda {
-        Package.new(:foo).register 
+        Packages.register(:foo, Package.new(:foo))
       }.should change(Packages, :count).from(0).to(1)
     end
   end
@@ -37,7 +37,7 @@ describe "package" do
   end
   
   it "should self register" do
-    Package.new(:foo).register
+    Packages.register(:foo, Package.new(:foo))
     Packages.count.should eql(1)
     lambda { Packages.lookup(:foo) }.should_not raise_error
   end
@@ -46,7 +46,7 @@ describe "package" do
     foo = nil
     before(:all) do
       foo = Package.new(:foo)
-      foo.register
+      Packages.register(:foo, foo)
     end
 
     it "should all be absent" do
@@ -60,7 +60,7 @@ describe "package" do
 
   describe "install" do
     it "should set install_callback" do
-      package(:installer) do
+      class Installer < Package
         def install 
           "I install"
         end
@@ -71,13 +71,14 @@ describe "package" do
           false
         end
       end
+      Packages.register(:installer, Installer.new(:installer))
       Packages.install(:installer).should eql("I install")
     end
   end
 
   describe "remove" do
     it "should set remove_callback" do
-      package(:remover) do
+      class Remover < Package
         def install 
           "nothing"
         end
@@ -88,24 +89,26 @@ describe "package" do
           true
         end
       end
+      Packages.register(:remover, Remover.new(:remover))
       Packages.remove(:remover).should eql("I remove")
     end
   end
 
   describe "installed?" do 
     it "should set installed_callback" do 
-      package(:foo) do
+      class Installed < Package
         def installed? 
           "I'm installed" 
         end
       end
-      Packages.installed?(:foo).should eql("I'm installed")
+      Packages.register(:installed?, Installed.new(:installed?))
+      Packages.installed?(:installed?).should eql("I'm installed")
     end
   end
     
   describe "add_dependency" do
     it "should add new dependency" do 
-      foo = package(:foo) {}
+      foo = Package.new(:foo)
       foo.add_dependency(:bar)
       foo.dependency_names.count.should eql(1)
     end
@@ -113,12 +116,13 @@ describe "package" do
 
   describe "depends_on" do
     it "should add new dependencies" do
-      package(:a) {}
-      package(:b) {} 
-      package(:c) {}
-      foo = package(:foo) {
+      a = Package.new(:a)
+      b = Package.new(:b)
+      c = Package.new(:c)
+      class Depender < Package
         depends_on :a, :b, :c
-      }
+      end
+      foo = Depender.new(:depender)
       foo.dependency_names.count.should eql(3)
     end      
   end
