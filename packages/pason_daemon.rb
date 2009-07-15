@@ -5,12 +5,11 @@ include FileUtils
 include Logging
 
 class PasonDaemon < Package 
-  depends_on :python, :git, :tdsurface
+  depends_on :python, :git, :tdsurface, :pywits
 
   def install
     mkdir_p "/var/django-projects/"
     shell_out("git clone git@github.com:teledrill/pason-daemon.git /var/django-projects/pason-daemon")
-    shell_out("git clone git@github.com:erdosmiller/PyWITS.git /var/django-projects/PyWITS")
     ln_s "/var/django-projects/PyWITS/PyWITS/", "/var/django-projects/pason-daemon/"
     ln_s "/var/django-projects/tdsurface", "/var/django-projects/pason-daemon/"
     cp "#@support/pason_daemon/pason", "/etc/init.d/"
