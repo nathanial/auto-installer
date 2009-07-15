@@ -20,7 +20,8 @@ aptitude_packages({
   :apache2 => 'apache2',
   :mod_python => 'libapache2-mod-python',
   :python_mysqldb => 'python-mysqldb',
-  :expect => 'expect'
+  :expect => 'expect',
+  :python_serial => 'python-serial'                    
 })
 
 gem_package(:http_client_gem, :gem => 'httpclient')

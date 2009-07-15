@@ -3,7 +3,7 @@ include FileUtils
 include Logging
 
 class ToolServer < Package
-  depends_on :python, :git
+  depends_on :python, :git, :python_serial
 
   def install 
     mkdir_p "/var/django-projects/"
