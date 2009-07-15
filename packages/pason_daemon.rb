@@ -13,8 +13,8 @@ class PasonDaemon < Package
     ln_s "/var/django-projects/PyWITS/PyWITS/", "/var/django-projects/pason-daemon/"
     ln_s "/var/django-projects/tdsurface", "/var/django-projects/pason-daemon/"
     cp "#@support/pason_daemon/pason", "/etc/init.d/"
+    chmod 0755, "/etc/init.d/pason"
     shell_out("update-rc.d pason defaults")
-    chmod 0005, "/etc/init.d/pason"
     shell_out("service pason start")
   end
 

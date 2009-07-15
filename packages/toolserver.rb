@@ -10,6 +10,7 @@ class ToolServer < Package
     shell_out("git clone git@github.com:teledrill/tdtoold.git /var/django-projects/tdtoold")
     shell_out("cd /var/django-projects/tdtoold && python setup.py install")
     cp "/var/django-projects/tdtoold/init.d/tdtoold", "/etc/init.d/"
+    chmod 0755, "/etc/init.d/pason"
     shell_out("update-rc.d tdtoold defaults")
     shell_out("service tdtoold start")
   end
