@@ -22,7 +22,7 @@ class TDSurface < Package
 
   def remove
     shell_out_force("service apache2 stop")
-    rm_rf '/var/django-projects'
+    rm_rf '/var/django-projects/tdsurface'
     rm_rf '/var/matplotlib'
     rm_rf '/var/log/tdsurface'
     rm_rf '/var/www/media'
@@ -33,7 +33,7 @@ class TDSurface < Package
   end
   
   def installed?
-    File.exists? '/var/django-projects'
+    File.exists? '/var/django-projects/tdsurface'
   end
 
   def restart_apache
