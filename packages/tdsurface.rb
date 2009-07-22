@@ -26,7 +26,7 @@ class TDSurface < Package
     rm_rf '/var/matplotlib'
     rm_rf '/var/log/tdsurface'
     rm_rf '/var/www/media'
-    remove_database
+    #formerly we removed teh database, but that wasn't cool
     rm_f '/etc/apache2/conf.d/tdsurface'
     rm_f '/usr/local/bin/django-admin.py'
     shell_out_force("service apache2 start")
@@ -60,8 +60,8 @@ class TDSurface < Package
     info "downloading tdsurface source from github"
     shell_out("git clone git@github.com:teledrill/tdsurface.git /var/django-projects/tdsurface")
     unless branch == 'master'
-      shell_out("git checkout -b #{branch}")
-      shell_out("git pull origin #{branch}")
+      shell_out("cd /var/django-projects/tdsurface && git checkout -b #{branch}")
+      shell_out("cd /var/django-projects/tdsurface && git pull origin #{branch}")
     end
   end
 
@@ -80,12 +80,16 @@ class TDSurface < Package
   
   def create_database 
     info "creating tdsurface database"
-    shell_out("""mysql --user=root --password=#@@password -e \"
+    begin
+      shell_out("""mysql --user=root --password=#@@password -e \"
 CREATE DATABASE tdsurface;
 CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY '#@@password';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
-    shell_out("expect #@support/tdsurface/expect_script.tcl")
+      shell_out("expect #@support/tdsurface/expect_script.tcl")
+    rescue
+      warn "could not create database or database already exists"
+    end
   end
 
   def reinstall_database 
