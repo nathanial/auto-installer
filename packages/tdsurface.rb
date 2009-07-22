@@ -10,10 +10,10 @@ class TDSurface < Package
 
   @@password = SETTINGS[:tdsurface][:password]
   
-  def install
+  def install(branch='master')
     process_support_files
     create_tdsurface_directories
-    download_tdsurface_project
+    download_tdsurface_project(branch)
     install_project_files
     shell_out("usermod -a -G dialout www-data")
     create_database
@@ -22,7 +22,7 @@ class TDSurface < Package
 
   def remove
     shell_out_force("service apache2 stop")
-    rm_rf '/var/django-projects'
+    rm_rf '/var/django-projects/tdsurface/'
     rm_rf '/var/matplotlib'
     rm_rf '/var/log/tdsurface'
     rm_rf '/var/www/media'
@@ -33,7 +33,7 @@ class TDSurface < Package
   end
   
   def installed?
-    File.exists? '/var/django-projects'
+    File.exists? '/var/django-projects/tdsurface/'
   end
 
   def restart_apache
@@ -56,9 +56,13 @@ class TDSurface < Package
     mkdir_p(['/var/django-projects', '/var/matplotlib', '/var/log/tdsurface'])
   end
   
-  def download_tdsurface_project
+  def download_tdsurface_project(branch)
     info "downloading tdsurface source from github"
     shell_out("git clone git@github.com:teledrill/tdsurface.git /var/django-projects/tdsurface")
+    unless branch == 'master'
+      shell_out("git checkout -b #{branch}")
+      shell_out("git pull origin #{branch}")
+    end
   end
 
   def reinstall 
