@@ -1,10 +1,6 @@
 #!/bin/sh
 
-<<<<<<< HEAD:package
 AUTO_INSTALLER_HOME="/home/nathan/development/auto-installer"
-=======
-AUTO_INSTALLER_HOME="/home/nathan/projects/auto-installer"
->>>>>>> 6235e5d664bfc3316d71e66fd87b7074295e68f6:package
 export AUTO_INSTALLER_HOME
 
 if [ "$(whoami)" != "root" ]
