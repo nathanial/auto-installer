@@ -37,10 +37,14 @@ end
 
 ProgramOptions::handle_options(ARGV)
 
+def stringify(args)
+  args.map {|a| "\"#{a}\""}
+end
+
 
 target = ARGV[0]
 command = ARGV[1]
-arguments = ARGV[2..ARGV.length].join(',')
+arguments = stringify(ARGV[2..ARGV.length]).join(',')
 begin 
   text = nil
   if arguments.length > 0

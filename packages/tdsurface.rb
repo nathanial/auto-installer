@@ -10,10 +10,10 @@ class TDSurface < Package
 
   @@password = SETTINGS[:tdsurface][:password]
   
-  def install
+  def install(branch='master')
     process_support_files
     create_tdsurface_directories
-    download_tdsurface_project
+    download_tdsurface_project(branch)
     install_project_files
     shell_out("usermod -a -G dialout www-data")
     create_database
@@ -22,18 +22,18 @@ class TDSurface < Package
 
   def remove
     shell_out_force("service apache2 stop")
-    rm_rf '/var/django-projects/tdsurface'
+    rm_rf '/var/django-projects/tdsurface/'
     rm_rf '/var/matplotlib'
     rm_rf '/var/log/tdsurface'
     rm_rf '/var/www/media'
-    remove_database
+    #formerly we removed teh database, but that wasn't cool
     rm_f '/etc/apache2/conf.d/tdsurface'
     rm_f '/usr/local/bin/django-admin.py'
     shell_out_force("service apache2 start")
   end
   
   def installed?
-    File.exists? '/var/django-projects/tdsurface'
+    File.exists? '/var/django-projects/tdsurface/'
   end
 
   def restart_apache
@@ -56,9 +56,13 @@ class TDSurface < Package
     mkdir_p(['/var/django-projects', '/var/matplotlib', '/var/log/tdsurface'])
   end
   
-  def download_tdsurface_project
+  def download_tdsurface_project(branch)
     info "downloading tdsurface source from github"
     shell_out("git clone git@github.com:teledrill/tdsurface.git /var/django-projects/tdsurface")
+    unless branch == 'master'
+      shell_out("cd /var/django-projects/tdsurface && git checkout -b #{branch}")
+      shell_out("cd /var/django-projects/tdsurface && git pull origin #{branch}")
+    end
   end
 
   def reinstall 
@@ -76,12 +80,16 @@ class TDSurface < Package
   
   def create_database 
     info "creating tdsurface database"
-    shell_out("""mysql --user=root --password=#@@password -e \"
+    begin
+      shell_out("""mysql --user=root --password=#@@password -e \"
 CREATE DATABASE tdsurface;
 CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY '#@@password';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
-    shell_out("expect #@support/tdsurface/expect_script.tcl")
+      shell_out("expect #@support/tdsurface/expect_script.tcl")
+    rescue
+      warn "could not create database or database already exists"
+    end
   end
 
   def reinstall_database 

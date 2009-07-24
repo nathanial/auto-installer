@@ -18,7 +18,6 @@ class Django < Package
   end
 
   def installed?
-    File.exists? '/usr/local/bin/django-admin.py' and 
     File.exists? "#@@python_site_packages/django"
   end
 end
