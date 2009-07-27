@@ -182,15 +182,47 @@ end
 
 class Package
   include ClassLevelInheritableAttributes
-  inheritable_attributes :dependency_names, :home, :support, :downloads, :name
+  inheritable_attributes :dependency_names, :home, :support, :downloads, :name, :root_directory, :project_directory
+  @root_directory = SETTINGS[:package][:directory]
   @home = ENV['AUTO_INSTALLER_HOME']
   @support = "#@home/support"
   @downloads = "#@home/downloads"
+
+  def initialize
+    @name = self.class.name
+    @root_directory = self.class.root_directory
+    @project_directory = self.class.project_directory
+    @home = self.class.home
+    @support = self.class.support
+    @downloads = self.class.downloads
+  end
+
+  def reinstall
+    Packages.remove(@name)
+    Packages.install(@name)
+  end
+
+  def get_binding
+    binding
+  end
+
+  def process_support_files
+    debug "processesing #@support/#{@name.to_s}/*"
+    Dir.glob("#@support/#{@name.to_s}/*").each do |file|
+      if File.file? file and /(\.*)(.erb$)/ =~ file
+        fname = file.scan(/(.*)(.erb$)/)[0][0]
+        File.open(fname, "w") do |f|
+          f.write(ERB.new(File.read(file)).result(get_binding))
+        end
+      end
+    end
+  end
 
   class << self
     def name(*args)
       if args.count == 1
         @name = args[0]
+        @project_directory = "#@root_directory/#@name"
         return Packages.register(@name, self)
       else
         @name
@@ -200,18 +232,6 @@ class Package
     def depends_on(*dependency_names)
       @dependency_names ||= []
       dependency_names.each {|a| @dependency_names << a}
-    end
-
-    def process_support_files
-      debug "processesing #@support/#{@name.to_s}/*"
-      Dir.glob("#@support/#{@name.to_s}/*").each do |file|
-        if File.file? file and /(\.*)(.erb$)/ =~ file
-          fname = file.scan(/(.*)(.erb$)/)[0][0]
-          File.open(fname, "w") do |f|
-            f.write(ERB.new(File.read(file)).result)
-          end
-        end
-      end
     end
 
     def to_s

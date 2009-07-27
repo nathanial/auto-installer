@@ -17,6 +17,6 @@ add_guard :command => :remove do |package|
 end
 
 add_before_hook :command => :install do |package|
-  package.class.process_support_files
+  package.process_support_files
 end
 

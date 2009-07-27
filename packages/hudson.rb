@@ -21,7 +21,7 @@ class Hudson < Package
   def remove 
     system("service hudson stop")
     system("update-rc.d -f hudson remove")
-    rm_rf '/opt/hudson/'
+    rm_rf @project_directory
     rm_f '/etc/init.d/hudson'
   end
 
@@ -31,8 +31,8 @@ class Hudson < Package
 
   def install_hudson_war 
     download_hudson_war
-    mkdir '/opt/hudson'
-    mv "#@downloads/hudson.war", '/opt/hudson/'
+    mkdir_p @project_directory
+    mv "#@downloads/hudson.war", @project_directory
   end
   
   def install_hudson_service 

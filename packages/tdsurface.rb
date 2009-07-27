@@ -5,13 +5,11 @@ class TDSurface < Package
   name :tdsurface
   depends_on :mysql_server, :apache2, :svn, :git, :django, :expect
   depends_on :python_tz, :matplotlib, :mod_python, :python_mysqldb
-
+  
   @@python_site_packages = 
     `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
 
   @@password = SETTINGS[:tdsurface][:password]
-  @@root_directory = SETTINGS[:package][:directory]
-  @@project_directory = "#@@root_directory/tdsurface"
   
   def install(branch='master')
     create_tdsurface_directories
@@ -24,7 +22,7 @@ class TDSurface < Package
 
   def remove
     shell_out_force("service apache2 stop")
-    rm_rf "#@@project_directory"
+    rm_rf "#@project_directory"
     rm_rf '/var/matplotlib'
     rm_rf '/var/log/tdsurface'
     rm_rf '/var/www/media'
@@ -35,7 +33,7 @@ class TDSurface < Package
   end
   
   def installed?
-    File.exists? @@project_directory
+    File.exists? @project_directory
   end
 
   def restart_apache
@@ -45,31 +43,26 @@ class TDSurface < Package
 
   def install_project_files 
     info "installing tdsurface project files"
-    cp "#{Package.support}/tdsurface/django_local_settings.py", "#@@project_directory/settings_local.py"
+    cp "#@support/tdsurface/django_local_settings.py", "#@project_directory/settings_local.py"
     chown("root", "www-data", ["/var/log/tdsurface"])
     cp_r "#@@python_site_packages/django/contrib/admin/media", "/var/www/media"
-    cp_r "#@@project_directory/media","/var/www/"
-    cp "#{Package.support}/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
+    cp_r "#@project_directory/media","/var/www/"
+    cp "#@support/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
     chmod_R(0777, ["/var/matplotlib", "/var/log/tdsurface"])
   end
 
   def create_tdsurface_directories
     info "creating tdsurface directories"
-    mkdir_p([@@root_directory, '/var/matplotlib', '/var/log/tdsurface'])
+    mkdir_p([@root_directory, '/var/matplotlib', '/var/log/tdsurface'])
   end
   
   def download_tdsurface_project(branch)
     info "downloading tdsurface source from github"
-    shell_out("git clone git@github.com:teledrill/tdsurface.git #@@project_directory")
+    shell_out("git clone git@github.com:teledrill/tdsurface.git #@project_directory")
     unless branch == 'master'
-      shell_out("cd #@@project_directory && git checkout -b #{branch}")
-      shell_out("cd #@@project_directory && git pull origin #{branch}")
+      shell_out("cd #@project_directory && git checkout -b #{branch}")
+      shell_out("cd #@project_directory && git pull origin #{branch}")
     end
-  end
-
-  def reinstall 
-    remove
-    install
   end
 
   def remove_database
@@ -88,7 +81,7 @@ CREATE DATABASE tdsurface;
 CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY '#@@password';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
-      shell_out("expect #{Package.support}/tdsurface/expect_script.tcl")
+      shell_out("expect #@support/tdsurface/expect_script.tcl")
     rescue
       warn "could not create database or database already exists"
     end

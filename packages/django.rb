@@ -7,9 +7,9 @@ class Django < Package
   @@python_site_packages = `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
 
   def install 
-    shell_out("svn co http://code.djangoproject.com/svn/django/trunk/ #{Package.downloads}/django-trunk")
+    shell_out("svn co http://code.djangoproject.com/svn/django/trunk/ #@downloads/django-trunk")
     rm_rf "#@@python_site_packages/django"
-    mv "#{Package.downloads}/django-trunk/django", "#@@python_site_packages/django", :force => true
+    mv "#@downloads/django-trunk/django", "#@@python_site_packages/django", :force => true
     ln_sf "#@@python_site_packages/django/bin/django-admin.py", "/usr/local/bin"
   end
 
@@ -19,6 +19,6 @@ class Django < Package
   end
 
   def installed?
-    File.exists? "#@@python_site_packages/django"
+    File.exists? "#@python_site_packages/django"
   end
 end

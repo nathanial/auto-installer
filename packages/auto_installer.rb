@@ -6,7 +6,7 @@ class AutoInstaller < Package
   depends_on :openssl_nonblock_gem
 
   def install 
-    ln_s "#{Package.home}/package", "/usr/local/bin/package"
+    ln_s "#@home/package", "/usr/local/bin/package"
   end
 
   def remove 

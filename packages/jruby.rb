@@ -9,15 +9,15 @@ class JRuby < Package
   @@jruby_repo_url = "git://github.com/jruby/jruby.git"
 
   def install
-    shell_out("git clone #@@jruby_repo_url /opt/jruby")
-    shell_out("ant -f /opt/jruby/build.xml")
+    shell_out("git clone #@@jruby_repo_url #@project_directory")
+    shell_out("ant -f #@project_directory/build.xml")
   end
 
   def remove 
-    rm_rf "/opt/jruby"
+    rm_rf @project_directory
   end
 
   def installed? 
-    File.exists? "/opt/jruby"
+    File.exists? @project_directory
   end
 end

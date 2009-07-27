@@ -12,33 +12,31 @@ class ActiveMQ < Package
 
   def install
     client = HTTPClient.new
-    open("#{Package.home}/downloads/activemq.tar.gz", "wb") do |file|
+    open("#@downloads/activemq.tar.gz", "wb") do |file|
       file.write(client.get_content(@@apache_activemq_url))
     end
-    shell_out("tar xf #{Package.home}/downloads/activemq.tar.gz -C #{Package.home}")
-    mv "#{Package.home}/apache-activemq-5.2.0", '/opt/apache-activemq-5.2.0'
-    ln_s '/opt/apache-activemq-5.2.0', '/opt/active-mq'
-    ln_s '/opt/apache-activemq-5.2.0/bin/linux-x86-32', '/opt/apache-activemq-5.2.0/bin/linux'
-    cp "#{Package.support}/activemq/activemq", '/etc/init.d/'
+    shell_out("tar xf #@home/downloads/activemq.tar.gz -C #@home")
+    mv "#@home/apache-activemq-5.2.0", @project_directory
+    ln_s '#@project_directory/bin/linux-x86-32', "#@project_directory/bin/linux"
+    cp "#@support/activemq/activemq", '/etc/init.d/'
     chmod 0005, '/etc/init.d/activemq'
     shell_out("update-rc.d activemq defaults")
     
-    wrapper_conf_path = "/opt/active-mq/bin/linux/wrapper.conf"
+    wrapper_conf_path = "#@project_directory/bin/linux/wrapper.conf"
     wrapper_conf = File.open(wrapper_conf_path).read
-    wrapper_conf.gsub!(/set\.default\.ACTIVEMQ_HOME=.*$/, 'set.default.ACTIVEMQ_HOME=/opt/active-mq')
-    wrapper_conf.gsub!(/set\.default\.ACTIVEMQ_BASE=.*$/, 'set.default.ACTIVEMQ_BASE=/opt/active-mq')
+    wrapper_conf.gsub!(/set\.default\.ACTIVEMQ_HOME=.*$/, 'set.default.ACTIVEMQ_HOME=#@project_directory')
+    wrapper_conf.gsub!(/set\.default\.ACTIVEMQ_BASE=.*$/, 'set.default.ACTIVEMQ_BASE=#@project_directory')
     open(wrapper_conf_path, "w") {|f| f.print(wrapper_conf)}    
   end
   
   def remove
-    rm_rf '/opt/active-mq'
-    rm_rf '/opt/apache-activemq-5.2.0'
+    rm_rf @project_directory
     shell_out("update-rc.d -f activemq remove")
     rm '/etc/init.d/activemq'
   end
 
   def installed? 
-    File.exists?("/opt/apache-activemq-5.2.0")
+    File.exists? @project_directory
   end
 end
 

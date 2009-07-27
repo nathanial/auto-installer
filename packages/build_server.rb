@@ -18,10 +18,10 @@ class BuildServer < Package
   def install_jobs 
     client = HTTPClient.new
     client.post('http://localhost:8080/createItem?name=autoinstaller', 
-                File.open("#{Package.support}/hudson/auto-installer-config.xml").read,
+                File.open("#@support/hudson/auto-installer-config.xml").read,
                 {'Content-Type' => 'text/xml'})
     client.post('http://localhost:8080/createItem?name=tdsurface',
-                File.open("#{Package.support}/hudson/tdsurface-config.xml").read,
+                File.open("#@support/hudson/tdsurface-config.xml").read,
                 {'Content-Type' => 'text/xml'})
   end
 end
