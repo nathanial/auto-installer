@@ -3,6 +3,7 @@ include FileUtils
 include Logging
 
 class ToolServer < Package
+  name :toolserver
   depends_on :python, :git, :python_serial
 
   @@root_directory = SETTINGS[:package][:directory]
@@ -28,4 +29,4 @@ class ToolServer < Package
     File.exists? @@project_directory
   end
 end
-Packages.register(:toolserver, ToolServer.new(:toolserver))
+

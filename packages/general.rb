@@ -28,6 +28,7 @@ gem_package(:http_client_gem, :gem => 'httpclient')
 gem_package(:openssl_nonblock_gem, :gem => 'openssl-nonblock')
 
 class RSpecGem < Package
+  name :rspec_gem
   depends_on :ruby, :rubygems
 
   def install 
@@ -44,9 +45,10 @@ class RSpecGem < Package
     `which spec`.strip != ''
   end
 end
-Packages.register(:rspec_gem, RSpecGem.new(:rspec_gem))
 
 class Python < Package
+  name :python
+
   def installed?
     some([:python25, :python26], lambda {|p| Packages.installed? p})
   end
@@ -59,7 +61,6 @@ class Python < Package
     "do nothing"
   end
 end
-Packages.register(:python, Python.new(:python))
       
 
 

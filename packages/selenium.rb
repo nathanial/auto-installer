@@ -5,11 +5,11 @@ include FileUtils
 include Logging
 
 class Selenium < Package
+  name :selenium
   depends_on :java
   @@selenium_url = "http://release.seleniumhq.org/selenium-remote-control/1.0.1/selenium-remote-control-1.0.1-dist.zip"
 
-  def install
-    process_support_files
+  def install 
     download_selenium_remote_control
     create_selenium_directories
     install_selenium_service
@@ -20,7 +20,7 @@ class Selenium < Package
     shell_out_force("update-rc.d -f selenium remove")
     rm_rf "/opt/selenium"
     rm_f '/etc/init.d/selenium'
-    rm_rf "#@downloads/selenium"
+    rm_rf "#{Package.downloads}/selenium"
   end
 
   def installed?
@@ -30,10 +30,10 @@ class Selenium < Package
   def download_selenium_remote_control
     info "downloading selenium-remote-control.zip from #{@@selenium_url}"
     client = HTTPClient.new
-    open("#@downloads/selenium-remote-control.zip", "wb") do |file|
+    open("#{Package.downloads}/selenium-remote-control.zip", "wb") do |file|
       file.write(client.get_content(@@selenium_url))
     end
-    shell_out("unzip #@downloads/selenium-remote-control.zip -d #@downloads/selenium")
+    shell_out("unzip #{Package.downloads}/selenium-remote-control.zip -d #{Package.downloads}/selenium")
   end    
 
   def create_selenium_directories
@@ -44,12 +44,11 @@ class Selenium < Package
 
   def install_selenium_service
     info "installing selenium service"
-    mv "#@downloads/selenium/selenium-remote-control-1.0.1/selenium-server-1.0.1/selenium-server.jar", '/opt/selenium'
-    cp "#@support/selenium/selenium", "/etc/init.d/"    
+    mv "#{Package.downloads}/selenium/selenium-remote-control-1.0.1/selenium-server-1.0.1/selenium-server.jar", '/opt/selenium'
+    cp "#{Package.support}/selenium/selenium", "/etc/init.d/"    
     shell_out("update-rc.d selenium defaults")
     chmod 0005, '/etc/init.d/selenium'
     shell_out("service selenium start")
   end    
     
 end
-Packages.register(:selenium, Selenium.new(:selenium))

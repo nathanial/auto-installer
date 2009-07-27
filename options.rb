@@ -12,11 +12,12 @@ module ProgramOptions
     options.list_packages = nil
 
     parser = OptionParser.new do |opts|
-      opts.banner = "Usage: package [options] <package> <command>"
+      opts.banner = "Usage: package [options] <command> <package>"
       opts.separator ""
       opts.separator "Specific Options:"
       
       opts.on("-d", "--debug", "Produce more logging output") do |debug|
+        puts "altering logger level"
         Logging.logger.level = Logger::DEBUG
       end
 
@@ -31,6 +32,7 @@ module ProgramOptions
         begin 
           p = Packages.lookup(package.intern)
           methods = p.methods - Package.instance_methods
+          methods.sort!
           for m in methods
             puts m 
           end

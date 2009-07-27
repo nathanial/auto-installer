@@ -5,8 +5,8 @@ include FileUtils
 include Logging
 
 class PyWITS < Package
+  name :pywits
   depends_on :python, :git
-
   @@root_directory = SETTINGS[:package][:directory]
   @@project_directory = "#@@root_directory/PyWITS"
 
@@ -28,5 +28,4 @@ class PyWITS < Package
     install
   end
 end
-Packages.register(:pywits, PyWITS.new(:pywits))
     

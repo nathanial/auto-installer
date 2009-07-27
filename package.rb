@@ -9,6 +9,40 @@ include Logging
 
 SETTINGS = {}
 
+GUARDS = {}
+BEFORE_HOOKS = {}
+AFTER_HOOKS = {}
+
+def add_guard(options, &guard)
+  command = options[:command]
+  scope = options[:scope] || :all
+  (GUARDS[[scope, command]] ||= []) << guard
+end
+
+def add_before_hook(options, &hook)
+  command = options[:command]
+  scope = options[:scope] || :all
+  (BEFORE_HOOKS[[scope, command]] ||= []) << hook
+end
+
+def add_after_hook(options, &hook)
+  command = options[:command]
+  scope = options[:scope] || :all
+  (AFTER_HOOKS[[scope, command]] ||= []) << hook
+end
+
+def guards_for(scope, command)
+  return (GUARDS[[scope,command]] ||= []) + (GUARDS[[:all,command]] ||= [])
+end
+
+def after_hooks_for(scope, command)
+  return (AFTER_HOOKS[[scope,command]] ||= []) + (AFTER_HOOKS[[:all,command]] ||= [])
+end
+
+def before_hooks_for(scope, command)
+  return (BEFORE_HOOKS[[scope,command]] ||= []) + (BEFORE_HOOKS[[:all,command]] ||= [])
+end
+
 def parse_settings 
   if not ENV['AUTO_INSTALLER_HOME'].nil? 
     doc = REXML::Document.new(File.new(ENV['AUTO_INSTALLER_HOME'] + "/settings"))
@@ -57,6 +91,30 @@ def some(collection, predicate)
   return false
 end
 
+module ClassLevelInheritableAttributes
+  def self.included(base)
+    base.extend(ClassMethods)    
+  end
+
+  module ClassMethods
+    def inheritable_attributes(*args)
+      @inheritable_attributes ||= [:inheritable_attributes]
+      @inheritable_attributes += args
+      args.each do |arg|
+        class_eval "class << self; attr_accessor :#{arg} end"
+      end
+      @inheritable_attributes
+    end
+    
+    def inherited(subclass)
+      @inheritable_attributes.each do |inheritable_attribute|
+        instance_var = "@#{inheritable_attribute}" 
+        subclass.instance_variable_set(instance_var, instance_variable_get(instance_var))
+      end
+    end
+  end
+end
+
 class PackageNotFound < Exception; end
 
 class Packages
@@ -68,15 +126,21 @@ class Packages
     end
 
     def register(*args)
+      name = nil
+      package = nil
       if args.count == 1
         package = args[0]
-        @@registered_packages[package.name] = package
+        name = package.name
       else 
         name = args[0]
         package = args[1]
-        debug "registering #{package} as #{name}"
-        @@registered_packages[name] = package
       end
+      unless (package.instance_of? AptitudePackage or 
+              package.instance_of? GemPackage)
+        package = package.new
+      end
+      debug "registering #{package} as #{name}"
+      @@registered_packages[name] = package
     end
     
     def unregister(package)
@@ -104,73 +168,76 @@ class Packages
       package_name = args[0]
       arguments = args[1..args.length]
       package = Packages.lookup(package_name)
-      package.send method_name, *arguments
+      guards = guards_for(package_name, method_name)
+      before_hooks = before_hooks_for(package_name, method_name)
+      after_hooks = after_hooks_for(package_name, method_name)
+      if all(guards.map {|g| g.call(package)}, lambda {|x| x})
+        before_hooks.each {|hook| hook.call(package)}
+        package.send method_name, *arguments
+        after_hooks.each {|hook| hook.call(package)}
+      end
     end
   end
 end
 
 class Package
-  attr_accessor :dependency_names, :name
+  include ClassLevelInheritableAttributes
+  inheritable_attributes :dependency_names, :home, :support, :downloads, :name
+  @home = ENV['AUTO_INSTALLER_HOME']
+  @support = "#@home/support"
+  @downloads = "#@home/downloads"
 
-  def initialize(name)
-    @name = name
-    @dependency_names = []
-    @home = ENV['AUTO_INSTALLER_HOME']
-    @support = "#@home/support"
-    @downloads = "#@home/downloads"
-  end
-
-  def reinstall
-    remove 
-    install
-  end
-
-  def self.depends_on(*dependency_names)
-    Aspect.new :after, :method => :initialize, :type => self,
-    :restricting_methods_to => :private_methods do |point, obj, *args|
-      dependency_names.each {|a| obj.add_dependency(a)}
+  class << self
+    def name(*args)
+      if args.count == 1
+        @name = args[0]
+        return Packages.register(@name, self)
+      else
+        @name
+      end
     end
-  end
 
-  def add_dependency(dependency)
-    @dependency_names << dependency
-  end
+    def depends_on(*dependency_names)
+      @dependency_names ||= []
+      dependency_names.each {|a| @dependency_names << a}
+    end
 
-  def dependencies
-    @dependency_names.map {|name| Packages.lookup(name) }
-  end
-
-  def process_support_files
-    debug "processesing #@support/#{@name.to_s}/*"
-    Dir.glob("#@support/#{@name.to_s}/*").each do |file|
-      if File.file? file and /(\.*)(.erb$)/ =~ file
-        fname = file.scan(/(.*)(.erb$)/)[0][0]
-        File.open(fname, "w") do |f|
-          f.write(ERB.new(File.read(file)).result)
+    def process_support_files
+      debug "processesing #@support/#{@name.to_s}/*"
+      Dir.glob("#@support/#{@name.to_s}/*").each do |file|
+        if File.file? file and /(\.*)(.erb$)/ =~ file
+          fname = file.scan(/(.*)(.erb$)/)[0][0]
+          File.open(fname, "w") do |f|
+            f.write(ERB.new(File.read(file)).result)
+          end
         end
       end
     end
-  end
 
-  def to_s
-    "Package #@name"
-  end
+    def to_s
+      "Package #@name"
+    end
 
-  def to_str
-    to_s
-  end
+    def to_str
+      to_s
+    end
 
-  def inspect 
-    "Package #@name"
+    def inspect 
+      "Package #@name"
+    end
   end
 end  
 
-class AptitudePackage < Package
-  attr_accessor :name, :aptitude_name
-  
+class AptitudePackage
+  attr_accessor :name
+
   def initialize(name, aptitude_name)
-    super(name)
+    @name = name
     @aptitude_name = aptitude_name
+  end
+
+  def self.dependency_names
+    []
   end
 
   def install
@@ -189,12 +256,16 @@ class AptitudePackage < Package
   end
 end
 
-class GemPackage < Package
-  attr_accessor :name, :gem_name
+class GemPackage
+  attr_accessor :name
 
   def initialize(name, gem_name)
-    super(name)
+    @name = name
     @gem_name = gem_name
+  end
+
+  def self.dependency_names 
+    []
   end
 
   def install
@@ -229,3 +300,4 @@ def gem_package(name, gem_name)
   Packages.register(p.name, p)
   return p
 end
+

@@ -4,6 +4,7 @@ require 'fileutils'
 include FileUtils
 
 class Hudson < Package
+  name :hudson
   depends_on :java, :selenium
   @@hudson_war_url = "http://hudson-ci.org/latest/hudson.war"
   @@hudson_cli_url = "http://localhost:8080/jnlpJars/hudson-cli.jar"
@@ -65,4 +66,3 @@ class Hudson < Package
     end
   end
 end
-Packages.register(:hudson, Hudson.new(:hudson))

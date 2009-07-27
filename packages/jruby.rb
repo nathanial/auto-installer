@@ -4,6 +4,7 @@ require 'fileutils'
 include FileUtils
 
 class JRuby < Package
+  name :jruby
   depends_on :java, :git
   @@jruby_repo_url = "git://github.com/jruby/jruby.git"
 
@@ -20,4 +21,3 @@ class JRuby < Package
     File.exists? "/opt/jruby"
   end
 end
-Packages.register(:jruby, JRuby.new(:jruby))

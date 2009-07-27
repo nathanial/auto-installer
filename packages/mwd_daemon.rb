@@ -5,6 +5,7 @@ include FileUtils
 include Logging
 
 class MWDDaemon < Package
+  name :mwd_daemon
   depends_on :python, :git, :tdsurface
 
   @@root_directory = SETTINGS[:package][:directory]
@@ -44,4 +45,4 @@ class MWDDaemon < Package
     end
   end
 end
-Packages.register(:mwd_daemon, MWDDaemon.new(:mwd_daemon))
+

@@ -1,5 +1,6 @@
 
 class BuildServer < Package
+  name :build_server
   depends_on :hudson, :tdsurface, :rspec_gem
   
   def install
@@ -17,11 +18,10 @@ class BuildServer < Package
   def install_jobs 
     client = HTTPClient.new
     client.post('http://localhost:8080/createItem?name=autoinstaller', 
-                File.open("#@support/hudson/auto-installer-config.xml").read,
+                File.open("#{Package.support}/hudson/auto-installer-config.xml").read,
                 {'Content-Type' => 'text/xml'})
     client.post('http://localhost:8080/createItem?name=tdsurface',
-                File.open("#@support/hudson/tdsurface-config.xml").read,
+                File.open("#{Package.support}/hudson/tdsurface-config.xml").read,
                 {'Content-Type' => 'text/xml'})
   end
 end
-Packages.register(:build_server, BuildServer.new(:build_server))

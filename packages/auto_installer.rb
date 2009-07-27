@@ -1,11 +1,12 @@
 
 class AutoInstaller < Package
+  name :auto_installer
   depends_on :git, :ruby, :rubygems, :irb
   depends_on :libopenssl_ruby, :http_client_gem
   depends_on :openssl_nonblock_gem
 
   def install 
-    ln_s "#@home/package", "/usr/local/bin/package"
+    ln_s "#{Package.home}/package", "/usr/local/bin/package"
   end
 
   def remove 
@@ -16,4 +17,3 @@ class AutoInstaller < Package
     File.exists? "/usr/local/bin/package"
   end
 end
-Packages.register(:auto_installer, AutoInstaller.new(:auto_installer))

@@ -5,20 +5,21 @@ require 'fileutils'
 include FileUtils
 
 class ActiveMQ < Package
+  name :activemq
   depends_on :java, :svn
 
   @@apache_activemq_url = "http://mirror-fpt-telecom.fpt.net/apache/activemq/apache-activemq/5.2.0/apache-activemq-5.2.0-bin.tar.gz"
 
   def install
     client = HTTPClient.new
-    open("#@home/downloads/activemq.tar.gz", "wb") do |file|
+    open("#{Package.home}/downloads/activemq.tar.gz", "wb") do |file|
       file.write(client.get_content(@@apache_activemq_url))
     end
-    shell_out("tar xf #@home/downloads/activemq.tar.gz -C #@home")
-    mv "#@home/apache-activemq-5.2.0", '/opt/apache-activemq-5.2.0'
+    shell_out("tar xf #{Package.home}/downloads/activemq.tar.gz -C #{Package.home}")
+    mv "#{Package.home}/apache-activemq-5.2.0", '/opt/apache-activemq-5.2.0'
     ln_s '/opt/apache-activemq-5.2.0', '/opt/active-mq'
     ln_s '/opt/apache-activemq-5.2.0/bin/linux-x86-32', '/opt/apache-activemq-5.2.0/bin/linux'
-    cp "#@support/activemq/activemq", '/etc/init.d/'
+    cp "#{Package.support}/activemq/activemq", '/etc/init.d/'
     chmod 0005, '/etc/init.d/activemq'
     shell_out("update-rc.d activemq defaults")
     
@@ -40,4 +41,4 @@ class ActiveMQ < Package
     File.exists?("/opt/apache-activemq-5.2.0")
   end
 end
-Packages.register(:activemq, ActiveMQ.new(:activemq))
+

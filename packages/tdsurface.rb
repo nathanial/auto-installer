@@ -2,6 +2,7 @@ require 'fileutils'
 include FileUtils
 
 class TDSurface < Package
+  name :tdsurface
   depends_on :mysql_server, :apache2, :svn, :git, :django, :expect
   depends_on :python_tz, :matplotlib, :mod_python, :python_mysqldb
 
@@ -13,7 +14,6 @@ class TDSurface < Package
   @@project_directory = "#@@root_directory/tdsurface"
   
   def install(branch='master')
-    process_support_files
     create_tdsurface_directories
     download_tdsurface_project(branch)
     install_project_files
@@ -45,11 +45,11 @@ class TDSurface < Package
 
   def install_project_files 
     info "installing tdsurface project files"
-    cp "#@support/tdsurface/django_local_settings.py", "#@@project_directory/settings_local.py"
+    cp "#{Package.support}/tdsurface/django_local_settings.py", "#@@project_directory/settings_local.py"
     chown("root", "www-data", ["/var/log/tdsurface"])
     cp_r "#@@python_site_packages/django/contrib/admin/media", "/var/www/media"
     cp_r "#@@project_directory/media","/var/www/"
-    cp "#@support/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
+    cp "#{Package.support}/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
     chmod_R(0777, ["/var/matplotlib", "/var/log/tdsurface"])
   end
 
@@ -88,7 +88,7 @@ CREATE DATABASE tdsurface;
 CREATE USER 'tdsurface'@'localhost' IDENTIFIED BY '#@@password';
 GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
 """)
-      shell_out("expect #@support/tdsurface/expect_script.tcl")
+      shell_out("expect #{Package.support}/tdsurface/expect_script.tcl")
     rescue
       warn "could not create database or database already exists"
     end
@@ -99,4 +99,3 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
     create_database
   end
 end
-Packages.register(:tdsurface, TDSurface.new(:tdsurface))

@@ -9,6 +9,8 @@ require 'options'
 include FileUtils
 include Logging
 
+Logging.logger.level = Logger::INFO
+
 Dir.glob("#{ENV['AUTO_INSTALLER_HOME']}/downloads/*").each do |p|
   rm_rf p
 end
@@ -20,20 +22,7 @@ Dir.glob("#{ENV['AUTO_INSTALLER_HOME']}/packages/*").each do |p|
   end
 end
 
-aspect1 = Aspect.new :around, :method => :install, :on_type_and_descendents => Package do |point, obj, *args|
-  if not obj.installed?
-    obj.dependencies.each {|d| d.install}
-    info "installing #{obj.name}"
-    point.proceed
-  end
-end
-
-aspect2 = Aspect.new :around, :method => :remove, :on_type_and_descendents => Package do |point, obj, *args|
-  if obj.installed?
-    info "removing #{obj.name}"
-    point.proceed
-  end
-end
+require 'hooks'
 
 ProgramOptions::handle_options(ARGV)
 
@@ -42,8 +31,8 @@ def stringify(args)
 end
 
 
-target = ARGV[0]
-command = ARGV[1]
+command = ARGV[0]
+target = ARGV[1]
 arguments = stringify(ARGV[2..ARGV.length]).join(',')
 begin 
   text = nil
@@ -59,6 +48,6 @@ p = Packages.#{command}(:#{target})
   result = eval text
   puts result unless result.nil?
 rescue Exception => e
-  error e.message
+  error e
   exit 1
 end

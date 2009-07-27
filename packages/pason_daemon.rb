@@ -5,6 +5,7 @@ include FileUtils
 include Logging
 
 class PasonDaemon < Package 
+  name :pason_daemon
   depends_on :python, :git, :tdsurface, :pywits
 
   @@root_directory = SETTINGS[:package][:directory]
@@ -15,7 +16,7 @@ class PasonDaemon < Package
     shell_out("git clone git@github.com:teledrill/pason-daemon.git #@@project_directory")
     ln_s "#@@root_directory/PyWITS/PyWITS/", "#@@project_directory"
     ln_s "#@@root_directory/tdsurface", "#@@project_directory"
-    cp "#@support/pason_daemon/pason", "/etc/init.d/"
+    cp "#{Package.support}/pason_daemon/pason", "/etc/init.d/"
     chmod 0755, "/etc/init.d/pason"
     shell_out("update-rc.d pason defaults")
     shell_out("service pason start")
@@ -36,4 +37,3 @@ class PasonDaemon < Package
     install
   end
 end
-Packages.register(:pason_daemon, PasonDaemon.new(:pason_daemon))
