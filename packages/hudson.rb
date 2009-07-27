@@ -6,6 +6,8 @@ include FileUtils
 class Hudson < Package
   name :hudson
   depends_on :java, :selenium
+  directories "#@project_directory/plugins"
+
   @@hudson_war_url = "http://hudson-ci.org/latest/hudson.war"
   @@hudson_cli_url = "http://localhost:8080/jnlpJars/hudson-cli.jar"
   @@git_plugin_url = "https://hudson.dev.java.net/files/documents/2402/119838/git.hpi"
@@ -21,17 +23,15 @@ class Hudson < Package
   def remove 
     system("service hudson stop")
     system("update-rc.d -f hudson remove")
-    rm_rf @project_directory
     rm_f '/etc/init.d/hudson'
   end
 
   def installed? 
-    File.exists? "/opt/hudson/" 
+    File.exists? @project_directory 
   end
 
   def install_hudson_war 
     download_hudson_war
-    mkdir_p @project_directory
     mv "#@downloads/hudson.war", @project_directory
   end
   
@@ -44,7 +44,6 @@ class Hudson < Package
 
   def install_git_plugin
     download_git_plugin
-    mkdir_p '/opt/hudson/plugins/'
     cp "#@downloads/git.hpi", '/opt/hudson/plugins/'
   end
 

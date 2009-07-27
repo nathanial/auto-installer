@@ -4,6 +4,8 @@ require 'rexml/document'
 require 'rubygems'
 require 'aquarium'
 require 'logging'
+require 'fileutils'
+include FileUtils
 include Aquarium::Aspects
 include Logging
 
@@ -182,7 +184,7 @@ end
 
 class Package
   include ClassLevelInheritableAttributes
-  inheritable_attributes :dependency_names, :home, :support, :downloads, :name, :root_directory, :project_directory
+  inheritable_attributes :dependency_names, :home, :support, :downloads, :name, :root_directory, :project_directory, :directories
   @root_directory = SETTINGS[:package][:directory]
   @home = ENV['AUTO_INSTALLER_HOME']
   @support = "#@home/support"
@@ -195,6 +197,17 @@ class Package
     @home = self.class.home
     @support = self.class.support
     @downloads = self.class.downloads
+    @directories = self.class.directories
+  end
+
+  def remove
+  end
+  
+  def install
+  end
+
+  def installed?
+    File.exists? @project_directory
   end
 
   def reinstall
@@ -204,6 +217,27 @@ class Package
 
   def get_binding
     binding
+  end
+
+  def create_directories
+    mkdir_p @root_directory
+    if not @repository.nil? and @repository[:type] == :git
+      checkout_source 
+    else
+      mkdir_p @project_directory
+    end
+    for directory in @directories
+      mkdir_p directory
+    end
+  end
+
+  def remove_directories
+    debug "removing #@project_directory"
+    rm_rf @project_directory
+    for directory in @directories
+      debug "remove #{directory}"
+      rm_rf directory
+    end
   end
 
   def process_support_files
@@ -228,10 +262,15 @@ class Package
         @name
       end
     end
-
+    
     def depends_on(*dependency_names)
       @dependency_names ||= []
       dependency_names.each {|a| @dependency_names << a}
+    end
+
+    def directories(*directories)
+      @directories ||= []
+      directories.each {|a| @directories << a}
     end
 
     def to_s

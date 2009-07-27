@@ -20,3 +20,11 @@ add_before_hook :command => :install do |package|
   package.process_support_files
 end
 
+add_before_hook :command => :install do |package|
+  package.create_directories
+end
+
+add_after_hook :command => :remove do |package|
+  package.remove_directories
+end
+

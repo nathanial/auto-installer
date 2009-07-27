@@ -9,7 +9,6 @@ class MWDDaemon < Package
   depends_on :python, :git, :tdsurface
 
   def install(branch='master')
-    mkdir_p @root_directory
     download_mwd_daemon_project(branch)
     ln_s "#@root_directory/tdsurface", @project_directory
     cp "#@support/mwd_daemon/mwd-daemon", "/etc/init.d/"
@@ -21,11 +20,6 @@ class MWDDaemon < Package
   def remove 
     shell_out_force("service mwd-daemon stop")
     shell_out_force("update-rc.d -f mwd-daemon remove")
-    rm_rf @project_directory
-  end
-
-  def installed?
-    File.exists? @project_directory
   end
 
   def download_mwd_daemon_project(branch)

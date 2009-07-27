@@ -1,16 +1,16 @@
 #!/bin/sh
 
 DESC="Selenium Server"
-NAME=selenium
+NAME=<%= @name %>
 PIDFILE=/var/run/$NAME.pid
 export DISPLAY=:0.0
 export XAUTHORITY=<%= SETTINGS[:selenium][:xauthority] %>
 export HOME=<%= SETTINGS[:selenium][:home] %>
 
 do_start() {
-    touch /var/log/selenium
-    chmod a+rw /var/log/selenium
-    start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --exec /usr/bin/java -- -jar /opt/selenium/selenium-server.jar -firefoxProfileTemplate /opt/selenium/profile/
+    touch /var/log/$NAME
+    chmod a+rw /var/log/$NAME
+    start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --exec /usr/bin/java -- -jar <%= @project_directory %>/selenium-server.jar -firefoxProfileTemplate <%= @project_directory %>/profile/
 }
 
 do_stop() {

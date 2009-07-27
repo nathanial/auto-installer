@@ -4,12 +4,12 @@ include FileUtils
 class Django < Package
   name :django
   depends_on :python, :svn
+  repository :svn, "http://code.djangoproject.com/svn/django/trunk/"
   @@python_site_packages = `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
 
   def install 
-    shell_out("svn co http://code.djangoproject.com/svn/django/trunk/ #@downloads/django-trunk")
     rm_rf "#@@python_site_packages/django"
-    mv "#@downloads/django-trunk/django", "#@@python_site_packages/django", :force => true
+    mv "#@project_directory/django", "#@@python_site_packages/django", :force => true
     ln_sf "#@@python_site_packages/django/bin/django-admin.py", "/usr/local/bin"
   end
 
