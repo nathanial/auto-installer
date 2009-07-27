@@ -1,4 +1,4 @@
-spawn python "/var/django-projects/tdsurface/manage.py" "syncdb"
+spawn python "<%= SETTINGS[:package][:directory] %>/tdsurface/manage.py" "syncdb"
 
 set timeout -1
 

@@ -9,6 +9,8 @@ class TDSurface < Package
     `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
 
   @@password = SETTINGS[:tdsurface][:password]
+  @@root_directory = SETTINGS[:package][:directory]
+  @@project_directory = "#@@root_directory/tdsurface"
   
   def install(branch='master')
     process_support_files
@@ -22,18 +24,18 @@ class TDSurface < Package
 
   def remove
     shell_out_force("service apache2 stop")
-    rm_rf '/var/django-projects/tdsurface/'
+    rm_rf "#@@project_directory"
     rm_rf '/var/matplotlib'
     rm_rf '/var/log/tdsurface'
     rm_rf '/var/www/media'
-    #formerly we removed teh database, but that wasn't cool
+    #formerly we removed the database, but that wasn't cool
     rm_f '/etc/apache2/conf.d/tdsurface'
     rm_f '/usr/local/bin/django-admin.py'
     shell_out_force("service apache2 start")
   end
   
   def installed?
-    File.exists? '/var/django-projects/tdsurface/'
+    File.exists? #@@project_directory
   end
 
   def restart_apache
@@ -43,25 +45,25 @@ class TDSurface < Package
 
   def install_project_files 
     info "installing tdsurface project files"
-    cp "#@support/tdsurface/django_local_settings.py", "/var/django-projects/tdsurface/settings_local.py"
+    cp "#@support/tdsurface/django_local_settings.py", "#@@project_directory/settings_local.py"
     chown("root", "www-data", ["/var/log/tdsurface"])
     cp_r "#@@python_site_packages/django/contrib/admin/media", "/var/www/media"
-    cp_r "/var/django-projects/tdsurface/media","/var/www/"
+    cp_r "#@@project_directory/media","/var/www/"
     cp "#@support/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
     chmod_R(0777, ["/var/matplotlib", "/var/log/tdsurface"])
   end
 
   def create_tdsurface_directories
     info "creating tdsurface directories"
-    mkdir_p(['/var/django-projects', '/var/matplotlib', '/var/log/tdsurface'])
+    mkdir_p([#@@project_directory, '/var/matplotlib', '/var/log/tdsurface'])
   end
   
   def download_tdsurface_project(branch)
     info "downloading tdsurface source from github"
-    shell_out("git clone git@github.com:teledrill/tdsurface.git /var/django-projects/tdsurface")
+    shell_out("git clone git@github.com:teledrill/tdsurface.git #@@project_directory")
     unless branch == 'master'
-      shell_out("cd /var/django-projects/tdsurface && git checkout -b #{branch}")
-      shell_out("cd /var/django-projects/tdsurface && git pull origin #{branch}")
+      shell_out("cd #@@project_directory && git checkout -b #{branch}")
+      shell_out("cd #@@project_directory && git pull origin #{branch}")
     end
   end
 

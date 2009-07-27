@@ -7,17 +7,20 @@ include Logging
 class PyWITS < Package
   depends_on :python, :git
 
+  @@root_directory = SETTINGS[:package][:directory]
+  @@project_directory = "#@@root_directory/PyWITS"
+
   def install 
-    mkdir_p "/var/django-projects/"
-    shell_out("git clone git@github.com:erdosmiller/PyWITS.git /var/django-projects/PyWITS")
+    mkdir_p @@root_directory
+    shell_out("git clone git@github.com:erdosmiller/PyWITS.git #@@project_directory")
   end
 
   def remove 
-    rm_rf "/var/django-projects/PyWITS"
+    rm_rf @@project_directory
   end
 
   def installed?
-    File.exists? "/var/django-projects/PyWITS"
+    File.exists? @@project_directory
   end
 
   def reinstall

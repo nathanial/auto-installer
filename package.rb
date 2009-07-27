@@ -120,6 +120,11 @@ class Package
     @downloads = "#@home/downloads"
   end
 
+  def reinstall
+    remove 
+    install
+  end
+
   def self.depends_on(*dependency_names)
     Aspect.new :after, :method => :initialize, :type => self,
     :restricting_methods_to => :private_methods do |point, obj, *args|

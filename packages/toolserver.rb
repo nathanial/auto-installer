@@ -5,11 +5,14 @@ include Logging
 class ToolServer < Package
   depends_on :python, :git, :python_serial
 
+  @@root_directory = SETTINGS[:package][:directory]
+  @@project_directory = "#@@root_directory/tool-server"
+
   def install 
-    mkdir_p "/var/django-projects/"
-    shell_out("git clone git@github.com:teledrill/tdtoold.git /var/django-projects/tdtoold")
-    shell_out("cd /var/django-projects/tdtoold && python setup.py install")
-    cp "/var/django-projects/tdtoold/init.d/tdtoold", "/etc/init.d/"
+    mkdir_p @@root_directory
+    shell_out("git clone git@github.com:teledrill/tdtoold.git #@@project_directory")
+    shell_out("cd #@@project_directory && python setup.py install")
+    cp "#@@project_directory/init.d/tdtoold", "/etc/init.d/"
     chmod 0755, "/etc/init.d/pason"
     shell_out("update-rc.d tdtoold defaults")
     shell_out("service tdtoold start")
@@ -18,11 +21,11 @@ class ToolServer < Package
   def remove 
     shell_out_force("service tdtoold stop")
     shell_out_force("update-rc.d -f tdtoold remove")
-    rm_rf "/var/django-projects/tdtoold"
+    rm_rf @@project_directory
   end
 
   def installed?
-    File.exists? "/var/django-projects/tdtoold"
+    File.exists? @@project_directory
   end
 end
 Packages.register(:toolserver, ToolServer.new(:toolserver))
