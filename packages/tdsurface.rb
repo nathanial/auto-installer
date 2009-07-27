@@ -35,7 +35,7 @@ class TDSurface < Package
   end
   
   def installed?
-    File.exists? #@@project_directory
+    File.exists? @@project_directory
   end
 
   def restart_apache
@@ -55,7 +55,7 @@ class TDSurface < Package
 
   def create_tdsurface_directories
     info "creating tdsurface directories"
-    mkdir_p([#@@project_directory, '/var/matplotlib', '/var/log/tdsurface'])
+    mkdir_p([@@root_directory, '/var/matplotlib', '/var/log/tdsurface'])
   end
   
   def download_tdsurface_project(branch)
