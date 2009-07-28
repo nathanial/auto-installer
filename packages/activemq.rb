@@ -7,6 +7,7 @@ include FileUtils
 class ActiveMQ < Package
   name :activemq
   depends_on :java
+  install_service
 
   @@apache_activemq_url = "http://mirror-fpt-telecom.fpt.net/apache/activemq/apache-activemq/5.2.0/apache-activemq-5.2.0-bin.tar.gz"
 
@@ -18,9 +19,6 @@ class ActiveMQ < Package
     shell_out("tar xf #@home/downloads/activemq.tar.gz -C #@home")
     mv_rf "#@home/apache-activemq-5.2.0/*", @project_directory
     ln_s "#@project_directory/bin/linux-x86-32", "#@project_directory/bin/linux"
-    cp "#@support/activemq/activemq", '/etc/init.d/'
-    chmod 0005, '/etc/init.d/activemq'
-    shell_out("update-rc.d activemq defaults")
     
     wrapper_conf_path = "#@project_directory/bin/linux/wrapper.conf"
     wrapper_conf = File.open(wrapper_conf_path).read
@@ -29,13 +27,5 @@ class ActiveMQ < Package
     open(wrapper_conf_path, "w") {|f| f.print(wrapper_conf)}    
   end
   
-  def remove
-    shell_out("update-rc.d -f activemq remove")
-    rm '/etc/init.d/activemq'
-  end
-
-  def installed? 
-    File.exists? @project_directory
-  end
 end
 

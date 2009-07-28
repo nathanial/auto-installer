@@ -184,7 +184,7 @@ end
 
 class Package
   include ClassLevelInheritableAttributes
-  inheritable_attributes :dependency_names, :home, :support, :downloads, :name, :root_directory, :project_directory, :directories
+  inheritable_attributes :dependency_names, :home, :support, :downloads, :name, :root_directory, :project_directory, :directories, :installs_service, :install_script, :has_repository, :repository_type, :repository_url
   @root_directory = SETTINGS[:package][:directory]
   @home = ENV['AUTO_INSTALLER_HOME']
   @support = "#@home/support"
@@ -198,6 +198,11 @@ class Package
     @support = self.class.support
     @downloads = self.class.downloads
     @directories = self.class.directories
+    @installs_service = self.class.installs_service?
+    @install_script = self.class.install_script
+    @has_repository = self.class.has_repository
+    @repository_type = self.class.repository_type
+    @repository_url = self.class.repository_url
   end
 
   def remove
@@ -217,6 +222,38 @@ class Package
 
   def get_binding
     binding
+  end
+
+  def has_repository?
+    @has_repository
+  end
+
+  def download_repository
+    if @repository_type == :git
+      shell_out("git clone #@repository_url #@project_directory")
+    elsif @repository_type == :svn
+      shell_out("svn checkout #@repository_url #@project_directory")
+    else
+      raise "unknown repository type #@repository_type for #@name" 
+    end
+  end
+
+  def installs_service? 
+    @installs_service
+  end
+
+  def install_service
+    script_name = (@install_script.split /\//).last
+    cp @install_script, "/etc/init.d/"
+    shell_out("update-rc.d #{script_name} defaults")
+    shell_out("service #{script_name} start")
+  end
+
+  def remove_service
+    script_name (@install_script.split /\//).last
+    shell_out("service #{script_name} stop")
+    shell_out("update-rc.d -f #{script_name} remove")
+    rm_f "/etc/init.d/#{script_name}"
   end
 
   def create_directories
@@ -271,6 +308,17 @@ class Package
     def directories(*directories)
       @directories ||= []
       directories.each {|a| @directories << a}
+    end
+
+    def repository(type, url)
+      @repository_type = type
+      @repository_url = url
+      @has_repository = true
+    end
+
+    def installs_service(options = {})
+      script = options[:script] || "#@support/#@name/#@name"
+      @installs_service = true
     end
 
     def to_s

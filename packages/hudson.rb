@@ -7,6 +7,7 @@ class Hudson < Package
   name :hudson
   depends_on :java, :selenium
   directories "#@project_directory/plugins"
+  installs_service
 
   @@hudson_war_url = "http://hudson-ci.org/latest/hudson.war"
   @@hudson_cli_url = "http://localhost:8080/jnlpJars/hudson-cli.jar"
@@ -16,52 +17,21 @@ class Hudson < Package
   def install 
     install_hudson_war
     install_git_plugin
-    install_hudson_service
     sleep(10)
   end
 
-  def remove 
-    system("service hudson stop")
-    system("update-rc.d -f hudson remove")
-    rm_f '/etc/init.d/hudson'
-  end
-
-  def installed? 
-    File.exists? @project_directory 
-  end
-
   def install_hudson_war 
-    download_hudson_war
-    mv "#@downloads/hudson.war", @project_directory
-  end
-  
-  def install_hudson_service 
-    cp "#@support/hudson/hudson", '/etc/init.d/'
-    shell_out('update-rc.d hudson defaults')
-    chmod 0005, '/etc/init.d/hudson'
-    shell_out("service hudson start")
-  end
-
-  def install_git_plugin
-    download_git_plugin
-    cp "#@downloads/git.hpi", '/opt/hudson/plugins/'
-  end
-
-  def download_hudson_war
     open("#@downloads/hudson.war", "wb") do |file|
       file.write(@@client.get_content(@@hudson_war_url))
     end
+    mv "#@downloads/hudson.war", @project_directory
   end
-
-  def download_hudson_cli
-    open("#@downloads/hudson-cli.jar", "wb") do |file|
-      file.write(@@client.get_content(@@hudson_cli_url))
-    end
-  end
-
-  def download_git_plugin
+  
+  def install_git_plugin
     open("#@downloads/git.hpi", "wb") do |file|
       file.write(@@client.get_content(@@git_plugin_url))
     end
+    cp "#@downloads/git.hpi", "#@project_directory/plugins"
   end
+
 end

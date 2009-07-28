@@ -28,10 +28,6 @@ class TDSurface < Package
     rm_f '/usr/local/bin/django-admin.py'
     shell_out_force("service apache2 start")
   end
-  
-  def installed?
-    File.exists? @project_directory
-  end
 
   def restart_apache
     info "restarting apache"

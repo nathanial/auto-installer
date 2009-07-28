@@ -20,11 +20,22 @@ add_before_hook :command => :install do |package|
   package.process_support_files
 end
 
-add_before_hook :command => :install do |package|
-  package.create_directories
-end
-
 add_after_hook :command => :remove do |package|
   package.remove_directories
 end
 
+add_after_hook :command => :install do |package|
+  package.install_service if package.installs_service?
+end
+
+add_after_hook :command => :remove do |package|
+  package.remove_service if package.installs_service?
+end
+
+add_before_hook :command => :install do |package|
+  package.download_repository if package.has_repository?
+end
+
+add_before_hook :command => :install do |package|
+  package.create_directories
+end
