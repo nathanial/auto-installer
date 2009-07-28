@@ -7,9 +7,6 @@ include Logging
 class PyWITS < Package
   name :pywits
   depends_on :python, :git
-
-  def install 
-    shell_out("git clone git@github.com:erdosmiller/PyWITS.git #@project_directory")
-  end
+  repository :git, "git@github.com:erdosmiller/PyWITS.git"
 end
     

@@ -5,9 +5,9 @@ include Logging
 class ToolServer < Package
   name :toolserver
   depends_on :python, :git, :python_serial
+  repository :git, "git@github.com:teledrill/tdtoold.git"
 
   def install 
-    shell_out("git clone git@github.com:teledrill/tdtoold.git #@project_directory")
     shell_out("cd #@project_directory && python setup.py install")
     cp "#@project_directory/init.d/tdtoold", "/etc/init.d/"
     chmod 0755, "/etc/init.d/tdtoold"

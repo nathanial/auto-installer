@@ -7,9 +7,9 @@ include Logging
 class PasonDaemon < Package 
   name :pason_daemon
   depends_on :python, :git, :tdsurface, :pywits
+  repository :git, "git@github.com:teledrill/pason-daemon.git"
 
   def install
-    shell_out("git clone git@github.com:teledrill/pason-daemon.git #@project_directory")
     ln_s "#@project_directory/PyWITS/", "#@project_directory"
     ln_s "#@root_directory/tdsurface", "#@project_directory"
     cp "#@support/pason_daemon/pason", "/etc/init.d/"
