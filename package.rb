@@ -137,10 +137,6 @@ class Packages
         name = args[0]
         package = args[1]
       end
-      unless (package.instance_of? AptitudePackage or 
-              package.instance_of? GemPackage)
-        package = package.new
-      end
       debug "registering #{package} as #{name}"
       @@registered_packages[name] = package
     end
@@ -150,11 +146,15 @@ class Packages
     end
     
     def lookup(name)
-      p = @@registered_packages[name]
-      if not p
+      package = @@registered_packages[name]
+      if not package
         raise PackageNotFound.new("cannot find package name \"#{name}\"")
       end
-      return p
+      if package.instance_of? Class 
+        package = package.new
+        @@registered_packages[name] = package
+      end
+      return package
     end
     
     def clear 
@@ -174,6 +174,7 @@ class Packages
       before_hooks = before_hooks_for(package_name, method_name)
       after_hooks = after_hooks_for(package_name, method_name)
       if all(guards.map {|g| g.call(package)}, lambda {|x| x})
+        debug "installing #{package_name}" if method_name == :install
         before_hooks.each {|hook| hook.call(package)}
         package.send method_name, *arguments
         after_hooks.each {|hook| hook.call(package)}
@@ -184,11 +185,13 @@ end
 
 class Package
   include ClassLevelInheritableAttributes
-  inheritable_attributes :dependency_names, :home, :support, :downloads, :name, :root_directory, :project_directory, :directories, :installs_service, :install_script, :has_repository, :repository_type, :repository_url
+  inheritable_attributes :dependency_names, :home, :support, :downloads, :name, :root_directory, :project_directory, :directories, :does_install_service, :install_script, :does_have_repository, :repository_type, :repository_url
   @root_directory = SETTINGS[:package][:directory]
   @home = ENV['AUTO_INSTALLER_HOME']
   @support = "#@home/support"
   @downloads = "#@home/downloads"
+
+  attr_accessor :name
 
   def initialize
     @name = self.class.name
@@ -198,12 +201,13 @@ class Package
     @support = self.class.support
     @downloads = self.class.downloads
     @directories = self.class.directories
-    @installs_service = self.class.installs_service?
+    @does_install_service = self.class.does_install_service
     @install_script = self.class.install_script
-    @has_repository = self.class.has_repository
+    @does_have_repository = self.class.does_have_repository
     @repository_type = self.class.repository_type
     @repository_url = self.class.repository_url
   end
+
 
   def remove
   end
@@ -225,10 +229,11 @@ class Package
   end
 
   def has_repository?
-    @has_repository
+    @does_have_repository
   end
 
   def download_repository
+    debug "downloading repository for #@name at #@repository_url"
     if @repository_type == :git
       shell_out("git clone #@repository_url #@project_directory")
     elsif @repository_type == :svn
@@ -239,10 +244,11 @@ class Package
   end
 
   def installs_service? 
-    @installs_service
+    @does_install_service
   end
 
   def install_service
+    debug "installing service for #@name"
     script_name = (@install_script.split /\//).last
     cp @install_script, "/etc/init.d/"
     shell_out("update-rc.d #{script_name} defaults")
@@ -250,6 +256,7 @@ class Package
   end
 
   def remove_service
+    debug "removing service for #@name"
     script_name (@install_script.split /\//).last
     shell_out("service #{script_name} stop")
     shell_out("update-rc.d -f #{script_name} remove")
@@ -257,12 +264,9 @@ class Package
   end
 
   def create_directories
+    debug "creating directories for #@name"
     mkdir_p @root_directory
-    if not @repository.nil? and @repository[:type] == :git
-      checkout_source 
-    else
-      mkdir_p @project_directory
-    end
+    mkdir_p @project_directory
     for directory in @directories
       mkdir_p directory
     end
@@ -311,13 +315,15 @@ class Package
     end
 
     def repository(type, url)
+      debug "#@name has repository type #{type} at #{url}"
       @repository_type = type
       @repository_url = url
-      @has_repository = true
+      @does_have_repository = true
     end
 
     def installs_service(options = {})
-      script = options[:script] || "#@support/#@name/#@name"
+      @install_script = options[:script] || "#@support/#@name/#@name"
+      debug "#@name installs service using #@install_script"
       @installs_service = true
     end
 

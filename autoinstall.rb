@@ -9,7 +9,7 @@ require 'options'
 include FileUtils
 include Logging
 
-Logging.logger.level = Logger::INFO
+Logging.logger.level = Logger::DEBUG
 
 Dir.glob("#{ENV['AUTO_INSTALLER_HOME']}/downloads/*").each do |p|
   rm_rf p

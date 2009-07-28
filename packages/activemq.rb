@@ -7,7 +7,7 @@ include FileUtils
 class ActiveMQ < Package
   name :activemq
   depends_on :java
-  install_service
+  installs_service
 
   @@apache_activemq_url = "http://mirror-fpt-telecom.fpt.net/apache/activemq/apache-activemq/5.2.0/apache-activemq-5.2.0-bin.tar.gz"
 
