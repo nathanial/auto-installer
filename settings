@@ -7,6 +7,6 @@
     <property name="password" value="scimitar1"/>
   </tdsurface>
   <package>
-    <property name="directory" value="/var/django-projects" />
+    <property name="directory" value="/var/development" />
   </package>
 </settings>

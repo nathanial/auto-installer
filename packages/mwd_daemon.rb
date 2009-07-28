@@ -13,6 +13,5 @@ class MWDDaemon < Package
   def install
     ln_s TDSurface.project_directory, @project_directory
   end
-
 end
 

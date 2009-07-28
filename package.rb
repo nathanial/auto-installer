@@ -173,19 +173,21 @@ class Packages
       guards = guards_for(package_name, method_name)
       before_hooks = before_hooks_for(package_name, method_name)
       after_hooks = after_hooks_for(package_name, method_name)
+      result = nil
       if all(guards.map {|g| g.call(package)}, lambda {|x| x})
         debug "installing #{package_name}" if method_name == :install
         before_hooks.each {|hook| hook.call(package)}
-        package.send method_name, *arguments
+        result = package.send method_name, *arguments
         after_hooks.each {|hook| hook.call(package)}
       end
+      return result
     end
   end
 end
 
 class Package
   include ClassLevelInheritableAttributes
-  inheritable_attributes :dependency_names, :home, :support, :downloads, :name, :root_directory, :project_directory, :directories, :does_install_service, :install_script, :does_have_repository, :repository_type, :repository_url
+  inheritable_attributes :dependency_names, :home, :support, :downloads, :name, :root_directory, :project_directory, :directory_list, :does_install_service, :install_script, :does_have_repository, :repository_type, :repository_url
   @root_directory = SETTINGS[:package][:directory]
   @home = ENV['AUTO_INSTALLER_HOME']
   @support = "#@home/support"
@@ -200,14 +202,13 @@ class Package
     @home = self.class.home
     @support = self.class.support
     @downloads = self.class.downloads
-    @directories = self.class.directories
+    @directory_list = self.class.directory_list
     @does_install_service = self.class.does_install_service
     @install_script = self.class.install_script
     @does_have_repository = self.class.does_have_repository
     @repository_type = self.class.repository_type
     @repository_url = self.class.repository_url
   end
-
 
   def remove
   end
@@ -251,15 +252,16 @@ class Package
     debug "installing service for #@name"
     script_name = (@install_script.split /\//).last
     cp @install_script, "/etc/init.d/"
+    shell_out("chmod a+xr /etc/init.d/#{script_name}")
     shell_out("update-rc.d #{script_name} defaults")
     shell_out("service #{script_name} start")
   end
 
   def remove_service
     debug "removing service for #@name"
-    script_name (@install_script.split /\//).last
-    shell_out("service #{script_name} stop")
-    shell_out("update-rc.d -f #{script_name} remove")
+    script_name = (@install_script.split /\//).last
+    shell_out_force("service #{script_name} stop")
+    shell_out_force("update-rc.d -f #{script_name} remove")
     rm_f "/etc/init.d/#{script_name}"
   end
 
@@ -267,7 +269,8 @@ class Package
     debug "creating directories for #@name"
     mkdir_p @root_directory
     mkdir_p @project_directory
-    for directory in @directories
+    for directory in @directory_list
+      debug "create #{directory}"
       mkdir_p directory
     end
   end
@@ -275,7 +278,7 @@ class Package
   def remove_directories
     debug "removing #@project_directory"
     rm_rf @project_directory
-    for directory in @directories
+    for directory in @directory_list
       debug "remove #{directory}"
       rm_rf directory
     end
@@ -298,20 +301,22 @@ class Package
       if args.count == 1
         @name = args[0]
         @project_directory = "#@root_directory/#@name"
+        @directory_list = []
+	@dependency_names = []
+        @does_install_service = false
+        @does_have_repository = false
         return Packages.register(@name, self)
       else
         @name
       end
     end
     
-    def depends_on(*dependency_names)
-      @dependency_names ||= []
-      dependency_names.each {|a| @dependency_names << a}
+    def depends_on(*names)
+      names.each {|a| @dependency_names << a}
     end
 
-    def directories(*directories)
-      @directories ||= []
-      directories.each {|a| @directories << a}
+    def directories(*dirs)
+      dirs.each {|a| @directory_list << a}
     end
 
     def repository(type, url)
@@ -324,7 +329,7 @@ class Package
     def installs_service(options = {})
       @install_script = options[:script] || "#@support/#@name/#@name"
       debug "#@name installs service using #@install_script"
-      @installs_service = true
+      @does_install_service = true
     end
 
     def to_s
@@ -341,7 +346,46 @@ class Package
   end
 end  
 
+module PackageStubMethods
+
+  def reinstall
+    Packages.remove(@name)
+    Packages.install(@name)
+  end
+
+  def get_binding
+    binding
+  end
+
+  def has_repository?
+    false
+  end
+
+  def download_repository
+  end
+
+  def installs_service? 
+    false
+  end
+
+  def install_service
+  end
+
+  def remove_service
+  end
+
+  def create_directories
+  end
+
+  def remove_directories
+  end
+
+  def process_support_files
+  end
+end
+
 class AptitudePackage
+  include PackageStubMethods
   attr_accessor :name
 
   def initialize(name, aptitude_name)
@@ -370,6 +414,7 @@ class AptitudePackage
 end
 
 class GemPackage
+  include PackageStubMethods
   attr_accessor :name
 
   def initialize(name, gem_name)

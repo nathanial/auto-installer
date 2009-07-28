@@ -25,7 +25,6 @@ class TDSurface < Package
     rm_rf '/var/www/media'
     #formerly we removed the database, but that wasn't cool
     rm_f '/etc/apache2/conf.d/tdsurface'
-    rm_f '/usr/local/bin/django-admin.py'
     shell_out_force("service apache2 start")
   end
 

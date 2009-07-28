@@ -19,6 +19,6 @@ class Django < Package
   end
 
   def installed?
-    File.exists? "#@python_site_packages/django"
+    File.exists? "#@@python_site_packages/django"
   end
 end

@@ -39,5 +39,6 @@ add_before_hook :command => :install do |package|
 end
 
 add_before_hook :command => :install do |package|
+  debug "#{package.name} creating directories"
   package.create_directories
 end

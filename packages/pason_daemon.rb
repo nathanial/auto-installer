@@ -11,7 +11,7 @@ class PasonDaemon < Package
   installs_service
 
   def install
-    ln_s "#@project_directory/PyWITS/", "#@project_directory"
-    ln_s "#@root_directory/tdsurface", "#@project_directory"
+    ln_s "#{PyWITS.project_directory}/PyWITS", "#@project_directory"
+    ln_s "#{TDSurface.project_directory}", "#@project_directory"
   end
 end

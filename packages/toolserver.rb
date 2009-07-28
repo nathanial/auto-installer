@@ -10,6 +10,8 @@ class ToolServer < Package
 
   def install 
     shell_out("cd #@project_directory && python setup.py install")
+    touch "/var/log/tdtoold.log"
+    shell_out("chmod a+rw /var/log/tdtoold.log")
   end
 end
 
