@@ -9,7 +9,7 @@ class ToolServer < Package
   installs_service :script => "#@project_directory/init.d/tdtoold"
 
   def install 
-    shell_out("cd #@project_directory && python setup.py install")
+    shell_out("cd #@project_directory && python setup.py install --install-scripts=/usr/local/bin")
     touch "/var/log/tdtoold.log"
     shell_out("chmod a+rw /var/log/tdtoold.log")
   end
