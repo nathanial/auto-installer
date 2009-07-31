@@ -66,7 +66,7 @@ parse_settings
 
 def shell_out(text)
   info(text)
-  raise "shell error with #{text}" unless system("#{text} > /dev/null")
+  raise "shell error with #{text}" unless system("#{text}")
 end
 
 def shell_out_force(text)
