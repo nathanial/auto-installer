@@ -32,19 +32,20 @@ end
 
 
 command = ARGV[0]
-target = ARGV[1]
-arguments = stringify(ARGV[2..ARGV.length]).join(',')
+target = ARGV.last
+arguments = stringify(ARGV[1..ARGV.length-2]).join(',')
 begin 
   text = nil
   if arguments.length > 0
     text =  """
-p = Packages.#{command}(:#{target}, *#{arguments})
+p = Packages.#{command}(:#{target}, #{arguments})
 """
   else
     text = """
 p = Packages.#{command}(:#{target})
 """
   end
+  puts "text = #{text}"
   result = eval text
   puts result unless result.nil?
 rescue Exception => e

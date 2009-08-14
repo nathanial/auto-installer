@@ -12,7 +12,7 @@ class TDSurface < Package
     `python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`.chomp
 
   @@password = SETTINGS[:tdsurface][:password]
-  
+
   def install
     install_project_files
     shell_out("usermod -a -G dialout www-data")
@@ -23,7 +23,6 @@ class TDSurface < Package
   def remove
     shell_out_force("service apache2 stop")
     rm_rf '/var/www/media'
-    #formerly we removed the database, but that wasn't cool
     rm_f '/etc/apache2/conf.d/tdsurface'
     shell_out_force("service apache2 start")
   end
@@ -68,5 +67,13 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
   def reinstall_database 
     remove_database
     create_database
+  end
+  
+  def redeploy_from(directory)
+    remove
+    rm_rf @project_directory
+    info "copying from #{directory} to #@project_directory"
+    cp_r directory, @project_directory
+    install
   end
 end

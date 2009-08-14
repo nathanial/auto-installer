@@ -187,7 +187,7 @@ end
 
 class Package
   include ClassLevelInheritableAttributes
-  inheritable_attributes :dependency_names, :home, :support, :downloads, :name, :root_directory, :project_directory, :directory_list, :does_install_service, :install_script, :does_have_repository, :repository_type, :repository_url
+  inheritable_attributes :dependency_names, :home, :support, :downloads, :name, :root_directory, :project_directory, :directory_list, :does_install_service, :install_script, :does_have_repository, :repository_type, :repository_url, :repository_branch
   @root_directory = SETTINGS[:package][:directory]
   @home = ENV['AUTO_INSTALLER_HOME']
   @support = "#@home/support"
@@ -208,6 +208,7 @@ class Package
     @does_have_repository = self.class.does_have_repository
     @repository_type = self.class.repository_type
     @repository_url = self.class.repository_url
+    @repository_branch = self.class.repository_branch
   end
 
   def remove
@@ -237,6 +238,11 @@ class Package
     debug "downloading repository for #@name at #@repository_url"
     if @repository_type == :git
       shell_out("git clone #@repository_url #@project_directory")
+      if @repository_branch and @repository_branch != 'master'
+        debug "pulling branch #@repository_branch"
+        shell_out("cd #@project_directory && " + 
+                  "git pull origin #@repository_branch")
+      end
     elsif @repository_type == :svn
       shell_out("svn checkout #@repository_url #@project_directory")
     else
@@ -324,6 +330,9 @@ class Package
       @repository_type = type
       @repository_url = url
       @does_have_repository = true
+      if SETTINGS[@name] and SETTINGS[@name][:branch]        
+        @repository_branch = SETTINGS[@name][:branch]
+      end
     end
 
     def installs_service(options = {})
