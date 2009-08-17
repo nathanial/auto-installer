@@ -5,6 +5,7 @@ class TDSurface < Package
   name :tdsurface
   depends_on :mysql_server, :apache2, :svn, :git, :django, :expect
   depends_on :python_tz, :matplotlib, :mod_python, :python_mysqldb
+  depends_on :pisa, :report_lab, :python_html5lib, :pypdf, :python_imaging
   directories '/var/matplotlib', '/var/log/tdsurface'
   repository :git, "git@github.com:teledrill/tdsurface.git"
   

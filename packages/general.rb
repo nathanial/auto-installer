@@ -21,7 +21,10 @@ aptitude_packages({
   :mod_python => 'libapache2-mod-python',
   :python_mysqldb => 'python-mysqldb',
   :expect => 'expect',
-  :python_serial => 'python-serial'                    
+  :python_serial => 'python-serial',
+  :python_html5lib => 'python-html5lib',
+  :pypdf => 'pypdf',
+  :python_imaging => 'python-imaging'
 })
 
 gem_package(:http_client_gem, :gem => 'httpclient')
