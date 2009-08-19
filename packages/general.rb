@@ -23,8 +23,9 @@ aptitude_packages({
   :expect => 'expect',
   :python_serial => 'python-serial',
   :python_html5lib => 'python-html5lib',
-  :pypdf => 'pypdf',
-  :python_imaging => 'python-imaging'
+  :pypdf => 'python-pypdf',
+  :python_imaging => 'python-imaging',
+  :python_dev => 'python-all-dev'
 })
 
 gem_package(:http_client_gem, :gem => 'httpclient')

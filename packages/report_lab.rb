@@ -4,7 +4,7 @@ include FileUtils
 
 class ReportLab < Package
   name :report_lab
-  depends_on :python
+  depends_on :python, :python_dev
 
   @@report_lab_url = "http://www.reportlab.org/ftp/ReportLab_2_3.tar.gz"
 

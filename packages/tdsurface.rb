@@ -3,9 +3,11 @@ include FileUtils
 
 class TDSurface < Package
   name :tdsurface
+
   depends_on :mysql_server, :apache2, :svn, :git, :django, :expect
   depends_on :python_tz, :matplotlib, :mod_python, :python_mysqldb
   depends_on :pisa, :report_lab, :python_html5lib, :pypdf, :python_imaging
+
   directories '/var/matplotlib', '/var/log/tdsurface'
   repository :git, "git@github.com:teledrill/tdsurface.git"
   
@@ -41,6 +43,8 @@ class TDSurface < Package
     cp_r "#@project_directory/media","/var/www/"
     cp "#@support/tdsurface/tdsurface_apache.conf", '/etc/apache2/conf.d/tdsurface'
     chmod_R(0777, ["/var/matplotlib", "/var/log/tdsurface"])
+    shell_out("touch /var/log/tdsurface/tdsurface.log")
+    shell_out("chmod a+rw /var/log/tdsurface/tdsurface.log")
   end
 
   def remove_database
@@ -76,5 +80,11 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
     info "copying from #{directory} to #@project_directory"
     cp_r directory, @project_directory
     install
+  end
+
+  def complete_redeploy_from(directory)
+    remove_database
+    redeploy_from(directory)
+    shell_out("cd #@project_directory && python manage.py loaddata fixtures/test_well.json")
   end
 end
