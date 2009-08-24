@@ -80,11 +80,17 @@ GRANT ALL PRIVILEGES ON *.* TO 'tdsurface'@'localhost';\"
     info "copying from #{directory} to #@project_directory"
     cp_r directory, @project_directory
     install
+    shell_out("cd #@project_directory && DJANGO_SETTINGS_MODULE=\"settings\" python -c 'from django.contrib.sessions.models import Session; Session.objects.all().delete()'")
   end
 
   def complete_redeploy_from(directory)
     remove_database
     redeploy_from(directory)
     shell_out("cd #@project_directory && python manage.py loaddata fixtures/test_well.json")
+  end
+
+  def cdf_and_sim(directory)
+    complete_redeploy_from(directory)
+    shell_out("cd #{MWDSim.project_directory} && python mwd_sim.py")
   end
 end
