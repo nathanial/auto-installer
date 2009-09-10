@@ -48,7 +48,7 @@ end
 def parse_settings 
   if not ENV['AUTO_INSTALLER_HOME'].nil? 
     doc = REXML::Document.new(File.new(ENV['AUTO_INSTALLER_HOME'] + "/settings"))
-    settings = doc.elements.first
+    settings = doc.elements[1]
     packages = settings.elements
     result = {}
     for p in packages
@@ -130,7 +130,7 @@ class Packages
     def register(*args)
       name = nil
       package = nil
-      if args.count == 1
+      if args.length == 1
         package = args[0]
         name = package.name
       else 
@@ -161,8 +161,8 @@ class Packages
       @@registered_packages.clear
     end
     
-    def count
-      @@registered_packages.count
+    def length
+      @@registered_packages.length
     end
 
     def method_missing(m, *args)
@@ -304,7 +304,7 @@ class Package
 
   class << self
     def name(*args)
-      if args.count == 1
+      if args.length == 1
         @name = args[0]
         @project_directory = "#@root_directory/#@name"
         @directory_list = []
