@@ -5,7 +5,7 @@
   </selenium>
   <tdsurface>
     <property name="password" value="scimitar1"/>
-    <property name="branch" value="nathan" />
+    <property name="branch" value="master" />
   </tdsurface>
   <package>
     <property name="directory" value="/var/development" />
